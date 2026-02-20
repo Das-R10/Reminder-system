@@ -1,0 +1,614 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Expiry Notifier — Dashboard</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            saffron: '#F4A300',
+            dark: '#0B0B0B'
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+
+  <style>
+    /* small polish for inputs in dark theme */
+    input, textarea, select {
+      caret-color: #F4A300;
+    }
+    .fade {
+        transition: opacity 0.3s ease;
+        }
+  </style>
+</head>
+
+<body class="min-h-screen bg-gray-50 text-gray-800">
+
+  <div id="loginScreen" class="fixed inset-0 flex items-center justify-center bg-dark z-50">
+    <div class="w-full max-w-md bg-black p-6 rounded border border-gray-700">
+      <h2 class="text-2xl font-bold text-saffron mb-2">Expiry Notifier</h2>
+      <p class="text-sm text-gray-400 mb-4">Sign up or log in to manage reminders</p>
+
+      <label class="text-xs text-gray-400">Company name (only for signup)</label>
+      <input id="authCompany" placeholder="Company Name"
+             class="w-full mb-3 bg-dark border border-gray-700 rounded px-3 py-2" />
+
+      <label class="text-xs text-gray-400">Email</label>
+      <input id="authEmail" placeholder="you@company.com"
+             class="w-full mb-3 bg-dark border border-gray-700 rounded px-3 py-2" />
+
+      <label class="text-xs text-gray-400">Password</label>
+      <input id="authPassword" type="password" placeholder="password"
+             class="w-full mb-3 bg-dark border border-gray-700 rounded px-3 py-2" />
+
+      <div class="flex gap-3 mb-3">
+        <button onclick="signup()" class="bg-saffron text-black px-4 py-2 rounded font-semibold w-1/2">Sign Up</button>
+        <button onclick="login()" class="bg-green-600 text-white px-4 py-2 rounded w-1/2">Login</button>
+      </div>
+      <div class="mb-3">
+        <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+        <div id="g_id_onload"
+            data-client_id="931122987998-3e2j....apps.googleusercontent.com"
+            data-callback="handleGoogleLogin"
+            data-auto_prompt="false">
+        </div>
+
+        <div class="g_id_signin"
+            data-theme="filled_black"
+            data-size="large"
+            data-shape="rectangular">
+        </div>
+
+      </div>
+
+      <pre id="authResult" class="mt-2 text-xs text-gray-400"></pre>
+      <p class="text-xs text-gray-600 mt-2">Tip: Sign up once — you'll stay logged in on this browser.</p>
+    </div>
+
+    
+    </div>
+
+  </div>
+
+  <div id="dashboard" class="hidden min-h-screen bg-gradient-to-br from-[#f7fafc] via-[#f8fbff] to-[#eef6ff]">
+
+    <header class="bg-white/80 backdrop-blur border-b border-gray-200 px-6 py-4 flex items-center justify-between sticky top-0 z-40">
+      <div>
+        <h1 class="text-xl font-semibold tracking-tight" style="color:#0b3d91">
+          Expiry Notifier
+        </h1>
+        <p class="text-xs text-gray-500">Automation & reminder management</p>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <span class="px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-900 border border-blue-100">
+          Active Plan
+        </span>
+
+        <div id="headerCompany" class="text-sm text-gray-700"></div>
+
+        <button onclick="logout()"
+          class="text-sm px-4 py-1 rounded border border-gray-200 hover:bg-gray-50 transition">
+          Logout
+        </button>
+      </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-6 py-10 space-y-10">
+
+      <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+          <div id="kpiTotal" class="text-2xl font-bold mt-2 text-blue-900">—</div>
+          <div id="kpiDelivery" class="text-2xl font-bold mt-2 text-green-600">—</div>
+          <div id="kpiRules" class="text-2xl font-bold mt-2 text-yellow-600">—</div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+          <div class="text-sm text-gray-500">Delivery Rate</div>
+          <div class="text-2xl font-bold mt-2 text-green-600">98.4%</div>
+          <div class="text-xs text-gray-400 mt-1">Healthy performance</div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+          <div class="text-sm text-gray-500">Automation Rules</div>
+          <div class="text-2xl font-bold mt-2" style="color:#F4A300">3 Active</div>
+          <div class="text-xs text-gray-400 mt-1">Managing expiries</div>
+        </div>
+
+      </section>
+
+      <section class="bg-white rounded-2xl p-8 shadow-md border border-gray-100">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-lg font-semibold tracking-tight" style="color:#0b3d91">
+            Message History
+          </h2>
+
+          <div class="flex gap-3">
+            <button onclick="loadHistory()"
+              class="px-5 py-2 rounded-lg text-white font-semibold shadow-sm hover:opacity-90 transition"
+              style="background:#0b3d91">
+              Refresh
+            </button>
+
+            <button onclick="sendNowDemo()"
+              class="px-5 py-2 rounded-lg text-white font-semibold bg-red-600 hover:bg-red-700 transition">
+              Send All Now
+            </button>
+          </div>
+        </div>
+
+        <div id="historyStatus" class="text-xs text-gray-500 mb-3"></div>
+        <div id="historyTable" class="text-sm text-gray-700 overflow-auto max-h-80"></div>
+      </section>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+
+        <section class="bg-white rounded-2xl p-8 shadow-md border border-gray-100">
+          <h2 class="text-lg font-semibold mb-6 tracking-tight" style="color:#0b3d91">
+            Company Settings
+          </h2>
+
+          <label class="block text-sm text-gray-600 mb-1">Company Name</label>
+          <input id="companyName"
+            class="w-full mb-5 border border-gray-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#0b3d91] outline-none transition" />
+
+          <label class="block text-sm text-gray-600 mb-1">Sender Email</label>
+          <input id="senderEmail"
+            class="w-full border border-gray-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#0b3d91] outline-none transition" />
+
+          <button onclick="saveCompany()"
+            class="mt-6 px-6 py-3 rounded-lg font-semibold text-black shadow-sm hover:opacity-90 transition"
+            style="background:#F4A300">
+            Save Settings
+          </button>
+        </section>
+
+        <section class="bg-white rounded-2xl p-8 shadow-md border border-gray-100">
+          <h2 class="text-lg font-semibold mb-6 tracking-tight" style="color:#0b3d91">
+            Upload Customers
+          </h2>
+
+          <input type="file" id="csvFile" accept=".csv"
+            class="block w-full text-sm text-gray-700 
+                  file:bg-[#F4A300] file:text-black 
+                  file:px-5 file:py-2 file:border-none file:rounded-lg 
+                  cursor-pointer mb-6"/>
+
+          <button onclick="uploadCSV()"
+            class="px-6 py-3 rounded-lg font-semibold text-black shadow-sm hover:opacity-90 transition"
+            style="background:#F4A300">
+            Upload CSV
+          </button>
+        </section>
+      </div>
+
+      <section class="bg-white rounded-2xl p-8 shadow-md border border-gray-100">
+        <h2 class="text-lg font-semibold mb-8 tracking-tight" style="color:#0b3d91">
+          Message & Automation
+        </h2>
+
+        <textarea id="template" rows="4"
+          class="w-full border border-gray-200 rounded-xl px-5 py-4 mb-8 focus:ring-2 focus:ring-[#0b3d91] outline-none transition"
+          placeholder="Hi {{first_name}}, your subscription expires on {{expiry_date}}.">
+        </textarea>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
+
+          <div>
+            <label class="text-sm text-gray-600">Lead Days</label>
+            <input id="leadDays"
+              class="w-full mt-2 border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#0b3d91] outline-none transition"
+              value="5,10,20" />
+          </div>
+
+          <div>
+            <label class="text-sm text-gray-600">Channels</label>
+            <div class="flex gap-5 mt-3 text-sm text-gray-700">
+              <label><input type="checkbox" id="chEmail" checked /> Email</label>
+              <label><input type="checkbox" id="chSMS" checked /> SMS</label>
+            </div>
+          </div>
+
+          <div class="flex items-end">
+            <button onclick="createRule()"
+              class="w-full px-5 py-3 rounded-lg font-semibold text-black shadow-sm hover:opacity-90 transition"
+              style="background:#F4A300">
+              Save Automation Rule
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+
+          <div class="bg-gray-50 border border-gray-200 rounded-2xl p-6">
+            <div class="font-semibold mb-3" style="color:#0b3d91">
+              Live Preview
+            </div>
+            <p id="previewText" class="text-gray-700 text-sm"></p>
+          </div>
+
+          <div class="bg-gray-50 border border-gray-200 rounded-2xl p-6">
+            <div class="font-semibold mb-5" style="color:#0b3d91">
+              Test Send
+            </div>
+
+            <input id="testCustomerId"
+              class="w-full mb-4 border border-gray-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#0b3d91] outline-none transition"
+              placeholder="Customer ID" />
+
+            <select id="testChannel"
+              class="w-full mb-4 border border-gray-200 rounded-lg px-4 py-3">
+              <option value="email">Email</option>
+              <option value="sms">SMS</option>
+            </select>
+
+            <button onclick="testSend()"
+              class="px-6 py-3 rounded-lg font-semibold text-white shadow-sm hover:opacity-90 transition"
+              style="background:#0b3d91">
+              Send Now
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <pre id="result"
+        class="bg-white border border-gray-200 rounded-2xl p-6 text-xs text-gray-600 shadow-sm">
+      </pre>
+
+    </main>
+  </div>
+
+
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+<script>
+/*
+  Single-file frontend logic.
+  - Uses localStorage 'tenant_id' to persist login.
+  - Expects backend endpoints:
+     POST /api/signup { company_name, email, password } -> { tenant_id }
+     POST /api/login { email, password } -> { tenant_id, company_name }
+     POST /api/google-login { token } -> { tenant_id, company_name }
+     POST /api/upload (multipart/form-data)
+     POST /api/rules
+     POST /api/test-send
+     GET  /api/history/:tenant_id
+     POST /api/send-now  (optional demo)
+     POST /api/company (optional to save companyName/senderEmail)
+*/
+
+let TOKEN = localStorage.getItem("token");
+let COMPANY_NAME = localStorage.getItem("company_name");
+
+window.onload = () => {
+  if (TOKEN) {
+    showDashboard();
+  } else {
+    showLogin();
+  }
+};
+
+
+// -------- UI show/hide ----------
+function showLogin() {
+  document.getElementById("loginScreen").classList.remove("hidden");
+  document.getElementById("dashboard").classList.add("hidden");
+}
+
+async function loadStats() {
+  const res = await fetch("/api/tenant/stats", {
+    headers: { Authorization: `Bearer ${TOKEN}` }
+  });
+
+  if (!res.ok) return;
+
+  const data = await res.json();
+
+  document.getElementById("kpiTotal").innerText = data.jobs_used || 0;
+
+  const deliveryRate = data.jobs_used > 0
+    ? ((data.jobs_used - data.failed_jobs) / data.jobs_used * 100).toFixed(1)
+    : 0;
+
+  document.getElementById("kpiDelivery").innerText = deliveryRate + "%";
+  document.getElementById("kpiRules").innerText = (data.active_rules || 0) + " Active";
+}
+
+
+function showDashboard() {
+  document.getElementById("loginScreen").classList.add("hidden");
+  document.getElementById("dashboard").classList.remove("hidden");
+
+  COMPANY_NAME = localStorage.getItem("company_name");
+  document.getElementById("headerCompany").innerText = COMPANY_NAME || "";
+
+  loadCompany();
+  loadHistory();
+  loadStats();
+
+}
+
+// -------- Auth functions ----------
+async function signup() {
+  const company_name = document.getElementById("authCompany").value.trim();
+  const email = document.getElementById("authEmail").value.trim();
+  const password = document.getElementById("authPassword").value;
+
+  if (!company_name || !email || !password) {
+    document.getElementById("authResult").innerText = "Fill all fields.";
+    return;
+  }
+
+  const res = await fetch("/api/signup", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({ company_name, email, password })
+  });
+
+  const data = await res.json();
+
+  if (data.success) {
+    document.getElementById("authResult").innerText = "Signup successful. Please login.";
+  } else {
+    document.getElementById("authResult").innerText = data.error || "Signup failed.";
+  }
+}
+
+async function login() {
+  const email = document.getElementById("authEmail").value.trim();
+  const password = document.getElementById("authPassword").value;
+
+  if (!email || !password) {
+    document.getElementById("authResult").innerText = "Enter email and password.";
+    return;
+  }
+
+  const res = await fetch("/api/login", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({ email, password })
+  });
+
+  const data = await res.json();
+
+  if (data.token) {
+    TOKEN = data.token;
+    COMPANY_NAME = data.company_name;
+
+    localStorage.setItem("token", TOKEN);
+    localStorage.setItem("company_name", COMPANY_NAME || "");
+
+    // Redirect to the new home page that offers choices
+    location.reload();
+
+  } else {
+    document.getElementById("authResult").innerText = data.error || "Login failed.";
+  }
+
+}
+
+
+function logout() {
+  localStorage.removeItem("token");
+  localStorage.removeItem("company_name");
+  token = null;
+  COMPANY_NAME = null;
+  showLogin();
+}
+
+// -------- Google Sign-in callback (frontend) --------
+// This receives a credential (ID token) from Google Identity Services.
+// Server must verify the token and return tenant info.
+async function handleGoogleLogin(response) {
+  // response.credential is a JWT from Google
+  const res = await fetch('/api/google-login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token: response.credential })
+  });
+
+  const data = await res.json();
+
+  if (data.token) {
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("company_name", data.company_name || "");
+    location.reload();
+  } else {
+    alert('Google login failed');
+  }
+}
+// -------- Company save (optional backend) ----------
+async function saveCompany() {
+  const company_name = document.getElementById("companyName").value.trim();
+  const sender = document.getElementById("senderEmail").value.trim();
+
+  // If you add a backend endpoint to store per-tenant company settings, call it here.
+  // For now we just store locally and show header.
+  COMPANY_NAME = company_name || COMPANY_NAME;
+  localStorage.setItem("company_name", COMPANY_NAME || "");
+  document.getElementById("headerCompany").innerText = COMPANY_NAME || "";
+  showResult({ success: true, saved: { company_name, sender } });
+
+  // Optional: POST /api/company { tenant_id, company_name, sender_email }
+  // Uncomment if you implement server-side storage.
+  /*
+  await fetch('/api/company', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ tenant_id: TENANT_ID, company_name, sender_email: sender })
+  });
+  */
+}
+
+async function loadCompany() {
+  // If you store company data server-side, fetch it here and populate fields.
+  const localName = localStorage.getItem("company_name");
+  if (localName) {
+    document.getElementById("companyName").value = localName;
+    document.getElementById("headerCompany").innerText = localName;
+  }
+}
+
+// -------- CSV Upload ----------
+async function uploadCSV() {
+  const file = document.getElementById("csvFile").files[0];
+  if (!file) return alert("Select CSV");
+
+  const form = new FormData();
+  form.append("file", file);
+
+  const res = await fetch("/api/upload", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${TOKEN}`
+    },
+    body: form
+  });
+
+  const data = await res.json();
+  showResult(data);
+}
+
+// -------- Create rule ----------
+async function createRule() {
+  const lead_days = (document.getElementById("leadDays").value || '')
+    .split(',')
+    .map(x => parseInt(x.trim()))
+    .filter(Boolean);
+
+  const channels = [];
+  if (document.getElementById("chEmail").checked) channels.push("email");
+  if (document.getElementById("chSMS").checked) channels.push("sms");
+
+  const body = {
+    name: "Expiry Reminder",
+    lead_days,
+    channels,
+    template: document.getElementById("template").value
+  };
+
+  const res = await fetch("/api/rules", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${TOKEN}`
+    },
+    body: JSON.stringify(body)
+  });
+
+  const data = await res.json();
+  showResult(data);
+}
+
+// -------- Live preview ----------
+document.getElementById("template").addEventListener("input", updatePreview);
+function updatePreview() {
+  let t = document.getElementById("template").value || '';
+  t = t.replace('{{first_name}}', 'John').replace('{{expiry_date}}', '2026-03-20');
+  document.getElementById("previewText").innerText = t;
+}
+updatePreview();
+
+// copy preview text
+function previewToClipboard() {
+  const txt = document.getElementById("previewText").innerText;
+  navigator.clipboard.writeText(txt).then(()=> {
+    showResult({ success: true, copied: txt });
+  });
+}
+
+// -------- Test send (immediate) ----------
+async function testSend() {
+  const customer_id = document.getElementById("testCustomerId").value.trim();
+  const channel = document.getElementById("testChannel").value;
+
+  if (!customer_id) return alert("Enter Customer ID");
+
+  const res = await fetch("/api/test-send", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${TOKEN}`
+    },
+    body: JSON.stringify({ customer_id, channel })
+  });
+
+  const data = await res.json();
+  showResult(data);
+}
+
+
+
+// -------- Message history ----------
+async function loadHistory() {
+  document.getElementById("historyStatus").innerText = "Loading...";
+  const res = await fetch(`/api/history`, {
+    headers: {
+      Authorization: `Bearer ${TOKEN}`
+    }
+  });
+  const data = await res.json();
+  document.getElementById("historyStatus").innerText = "";
+
+  if (!Array.isArray(data)) {
+    document.getElementById("historyTable").innerText = JSON.stringify(data, null, 2);
+    return;
+  }
+
+  let html = `<table class="w-full text-left border border-gray-700 text-xs">
+    <thead class="text-saffron">
+      <tr><th class="p-2">ID</th><th class="p-2">Customer</th><th class="p-2">Channel</th><th class="p-2">Status</th><th class="p-2">Scheduled</th></tr>
+    </thead><tbody>`;
+
+  data.forEach(j => {
+    html += `<tr class="border-t border-gray-700">
+      <td class="p-2">${j.id}</td>
+      <td class="p-2">${j.customer_id || j.customer_id}</td>
+      <td class="p-2">${j.channel}</td>
+      <td class="p-2">${j.status}</td>
+      <td class="p-2">${j.scheduled_at ? new Date(j.scheduled_at).toLocaleString() : ''}</td>
+    </tr>`;
+  });
+
+  html += `</tbody></table>`;
+  document.getElementById("historyTable").innerHTML = html;
+}
+
+// -------- Demo: send all now (optional backend required) ----------
+async function sendNowDemo() {
+  if (!confirm("Send all pending tenant messages now?")) return;
+
+  const res = await fetch("/api/send-now", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${TOKEN}`
+    }
+  });
+
+  const data = await res.json();
+  showResult(data);
+  setTimeout(loadHistory, 1500);
+}
+
+
+// -------- small utility ----------
+function showResult(obj) {
+  document.getElementById("result").innerText = JSON.stringify(obj, null, 2);
+  console.log(obj);
+}
+</script>
+
+</body>
+</html> -->

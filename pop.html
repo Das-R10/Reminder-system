@@ -1,0 +1,502 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Expiry Notifier — Dashboard</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            saffron: '#F4A300',
+            dark: '#0B0B0B'
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+
+  <style>
+    /* small polish for inputs in dark theme */
+    input, textarea, select {
+      caret-color: #F4A300;
+    }
+    .fade {
+        transition: opacity 0.3s ease;
+        }
+  </style>
+</head>
+
+<body class="bg-dark text-white min-h-screen">
+
+  <div id="loginScreen" class="fixed inset-0 flex items-center justify-center bg-dark z-50">
+    <div class="w-full max-w-md bg-black p-6 rounded border border-gray-700">
+      <h2 class="text-2xl font-bold text-saffron mb-2">Expiry Notifier</h2>
+      <p class="text-sm text-gray-400 mb-4">Sign up or log in to manage reminders</p>
+
+      <label class="text-xs text-gray-400">Company name (only for signup)</label>
+      <input id="authCompany" placeholder="Company Name"
+             class="w-full mb-3 bg-dark border border-gray-700 rounded px-3 py-2" />
+
+      <label class="text-xs text-gray-400">Email</label>
+      <input id="authEmail" placeholder="you@company.com"
+             class="w-full mb-3 bg-dark border border-gray-700 rounded px-3 py-2" />
+
+      <label class="text-xs text-gray-400">Password</label>
+      <input id="authPassword" type="password" placeholder="password"
+             class="w-full mb-3 bg-dark border border-gray-700 rounded px-3 py-2" />
+
+      <div class="flex gap-3 mb-3">
+        <button onclick="signup()" class="bg-saffron text-black px-4 py-2 rounded font-semibold w-1/2">Sign Up</button>
+        <button onclick="login()" class="bg-green-600 text-white px-4 py-2 rounded w-1/2">Login</button>
+      </div>
+      <div class="mb-3">
+        <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+        <div id="g_id_onload"
+            data-client_id="931122987998-3e2j....apps.googleusercontent.com"
+            data-callback="handleGoogleLogin"
+            data-auto_prompt="false">
+        </div>
+
+        <div class="g_id_signin"
+            data-theme="filled_black"
+            data-size="large"
+            data-shape="rectangular">
+        </div>
+
+      </div>
+
+      <pre id="authResult" class="mt-2 text-xs text-gray-400"></pre>
+      <p class="text-xs text-gray-600 mt-2">Tip: Sign up once — you'll stay logged in on this browser.</p>
+    </div>
+
+    
+    </div>
+
+  </div>
+
+  <div id="dashboard" class="hidden min-h-screen">
+
+    <header class="bg-black border-b border-saffron px-6 py-4 flex items-center justify-between">
+      <div>
+        <h1 class="text-2xl font-bold text-saffron">Expiry Notifier</h1>
+        <p class="text-sm text-gray-400">Automated reminders for your customers</p>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <div id="headerCompany" class="text-sm text-gray-300"></div>
+        <button onclick="logout()" class="text-sm px-3 py-1 rounded border border-gray-700 hover:bg-gray-800">Logout</button>
+      </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+
+      <section class="bg-black rounded-xl p-5 border border-gray-800 md:col-span-2">
+        <h2 class="text-lg font-semibold text-saffron mb-3">📜 Message History</h2>
+
+        <div class="flex gap-3 items-center mb-3">
+          <button onclick="loadHistory()" class="bg-saffron text-black px-3 py-1 rounded">Refresh</button>
+          <button onclick="sendNowDemo()" class="bg-red-600 text-white px-3 py-1 rounded">Send All Now (demo)</button>
+          <div id="historyStatus" class="text-xs text-gray-400 ml-2"></div>
+        </div>
+
+        <div id="historyTable" class="text-xs text-gray-300 overflow-auto max-h-64"></div>
+      </section>
+
+
+      <section class="bg-black rounded-xl p-5 border border-gray-800">
+        <h2 class="text-lg font-semibold text-saffron mb-4">🏢 Company Settings</h2>
+
+        <label class="block text-sm mb-1">Company Name</label>
+        <input id="companyName" class="w-full mb-3 bg-dark border border-gray-700 rounded px-3 py-2"
+               placeholder="Acme Pvt Ltd" />
+
+        <label class="block text-sm mb-1">Sender Email</label>
+        <input id="senderEmail" class="w-full bg-dark border border-gray-700 rounded px-3 py-2"
+               placeholder="billing@acme.com" />
+
+        <p class="text-xs text-gray-400 mt-2">(Must be verified in SendGrid)</p>
+
+        <div class="mt-3">
+          <button onclick="saveCompany()" class="bg-saffron text-black px-4 py-2 rounded font-semibold">Save</button>
+        </div>
+      </section>
+
+      <section class="bg-black rounded-xl p-5 border border-gray-800">
+        <h2 class="text-lg font-semibold text-saffron mb-4">📤 Upload Customers</h2>
+
+        <input type="file" id="csvFile" accept=".csv"
+               class="block w-full text-sm text-gray-300 file:bg-saffron file:text-black file:px-4 file:py-2 file:border-none file:rounded cursor-pointer mb-4"/>
+
+        <button onclick="uploadCSV()" class="bg-saffron text-black px-4 py-2 rounded font-semibold">Upload CSV</button>
+      </section>
+
+      <section class="bg-black rounded-xl p-5 border border-gray-800 md:col-span-2">
+        <h2 class="text-lg font-semibold text-saffron mb-4">📝 Message & Automation</h2>
+
+        <label class="block text-sm mb-1">Message Template</label>
+        <textarea id="template" rows="4"
+          class="w-full bg-dark border border-gray-700 rounded px-3 py-2 mb-3"
+          placeholder="Hi {{first_name}}, your subscription expires on {{expiry_date}}."></textarea>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <div>
+            <label class="text-sm">Send reminders before (days)</label>
+            <input id="leadDays" class="w-full bg-dark border border-gray-700 rounded px-3 py-2" value="5,10,20" />
+          </div>
+
+          <div>
+            <label class="text-sm">Channels</label>
+            <div class="flex gap-4 mt-2">
+              <label class="flex items-center gap-2"><input type="checkbox" id="chEmail" checked/> Email</label>
+              <label class="flex items-center gap-2"><input type="checkbox" id="chSMS" checked/> SMS</label>
+            </div>
+          </div>
+
+          <div class="flex items-end">
+            <button onclick="createRule()" class="bg-saffron text-black px-4 py-2 rounded font-semibold w-full">Save Automation Rule</button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="bg-dark border border-gray-700 rounded p-4 text-sm">
+            <strong class="text-saffron">Live Preview</strong>
+            <p id="previewText" class="mt-2 text-gray-300"></p>
+          </div>
+
+          <div class="bg-dark border border-gray-700 rounded p-4">
+            <h3 class="text-saffron font-semibold mb-3">🚀 Test Send (Send Now)</h3>
+
+            <input id="testCustomerId" placeholder="Customer ID (e.g. C1001)" class="w-full mb-2 bg-dark border border-gray-700 rounded px-3 py-2" />
+            <select id="testChannel" class="w-full mb-2 bg-dark border border-gray-700 rounded px-3 py-2">
+              <option value="email">Email</option>
+              <option value="sms">SMS</option>
+            </select>
+
+            <div class="flex gap-2">
+              <button onclick="testSend()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded font-semibold">Send Now</button>
+              <button onclick="previewToClipboard()" class="bg-gray-700 text-white px-4 py-2 rounded">Copy Preview</button>
+            </div>
+
+            <p class="text-xs text-gray-400 mt-2">Sends instantly to one customer. Does not affect automation.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="md:col-span-2">
+        <pre id="result" class="bg-black border border-gray-800 rounded p-4 text-xs text-gray-300"></pre>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+<script>
+/*
+  Single-file frontend logic.
+  - Uses localStorage 'tenant_id' to persist login.
+  - Expects backend endpoints:
+     POST /api/signup { company_name, email, password } -> { tenant_id }
+     POST /api/login { email, password } -> { tenant_id, company_name }
+     POST /api/google-login { token } -> { tenant_id, company_name }
+     POST /api/upload (multipart/form-data)
+     POST /api/rules
+     POST /api/test-send
+     GET  /api/history/:tenant_id
+     POST /api/send-now  (optional demo)
+     POST /api/company (optional to save companyName/senderEmail)
+*/
+
+let TOKEN = localStorage.getItem("token");
+let COMPANY_NAME = localStorage.getItem("company_name");
+
+window.onload = () => {
+  // Google button will call handleGoogleLogin (if configured)
+  if (TOKEN) {
+    showDashboard();
+  } else {
+    showLogin();
+  }
+};
+
+// -------- UI show/hide ----------
+function showLogin() {
+  document.getElementById("loginScreen").classList.remove("hidden");
+  document.getElementById("dashboard").classList.add("hidden");
+}
+
+function showDashboard() {
+  document.getElementById("loginScreen").classList.add("hidden");
+  document.getElementById("dashboard").classList.remove("hidden");
+
+  COMPANY_NAME = localStorage.getItem("company_name");
+  document.getElementById("headerCompany").innerText = COMPANY_NAME || "";
+
+  loadCompany();
+  loadHistory();
+}
+
+// -------- Auth functions ----------
+async function signup() {
+  const company_name = document.getElementById("authCompany").value.trim();
+  const email = document.getElementById("authEmail").value.trim();
+  const password = document.getElementById("authPassword").value;
+
+  if (!company_name || !email || !password) {
+    document.getElementById("authResult").innerText = "Fill all fields.";
+    return;
+  }
+
+  const res = await fetch("/api/signup", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({ company_name, email, password })
+  });
+
+  const data = await res.json();
+
+  if (data.success) {
+    document.getElementById("authResult").innerText = "Signup successful. Please login.";
+  } else {
+    document.getElementById("authResult").innerText = data.error || "Signup failed.";
+  }
+}
+
+async function login() {
+  const email = document.getElementById("authEmail").value.trim();
+  const password = document.getElementById("authPassword").value;
+
+  if (!email || !password) {
+    document.getElementById("authResult").innerText = "Enter email and password.";
+    return;
+  }
+
+  const res = await fetch("/api/login", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({ email, password })
+  });
+
+  const data = await res.json();
+
+  if (data.token) {
+    TOKEN = data.token;
+    COMPANY_NAME = data.company_name;
+
+    localStorage.setItem("token", TOKEN);
+    localStorage.setItem("company_name", COMPANY_NAME || "");
+
+    // Redirect to the new home page that offers choices
+    location.href = '/home.html';
+  } else {
+    document.getElementById("authResult").innerText = data.error || "Login failed.";
+  }
+
+}
+
+
+function logout() {
+  localStorage.removeItem("token");
+  localStorage.removeItem("company_name");
+  token = null;
+  COMPANY_NAME = null;
+  showLogin();
+}
+
+// -------- Google Sign-in callback (frontend) --------
+// This receives a credential (ID token) from Google Identity Services.
+// Server must verify the token and return tenant info.
+async function handleGoogleLogin(response) {
+  // response.credential is a JWT from Google
+  const res = await fetch('/api/google-login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token: response.credential })
+  });
+
+  const data = await res.json();
+
+  if (data.tenant_id) {
+    localStorage.setItem('tenant_id', data.tenant_id);
+    location.reload();
+  } else {
+    alert('Google login failed');
+  }
+}
+// -------- Company save (optional backend) ----------
+async function saveCompany() {
+  const company_name = document.getElementById("companyName").value.trim();
+  const sender = document.getElementById("senderEmail").value.trim();
+
+  // If you add a backend endpoint to store per-tenant company settings, call it here.
+  // For now we just store locally and show header.
+  COMPANY_NAME = company_name || COMPANY_NAME;
+  localStorage.setItem("company_name", COMPANY_NAME || "");
+  document.getElementById("headerCompany").innerText = COMPANY_NAME || "";
+  showResult({ success: true, saved: { company_name, sender } });
+
+  // Optional: POST /api/company { tenant_id, company_name, sender_email }
+  // Uncomment if you implement server-side storage.
+  /*
+  await fetch('/api/company', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ tenant_id: TENANT_ID, company_name, sender_email: sender })
+  });
+  */
+}
+
+async function loadCompany() {
+  // If you store company data server-side, fetch it here and populate fields.
+  const localName = localStorage.getItem("company_name");
+  if (localName) {
+    document.getElementById("companyName").value = localName;
+    document.getElementById("headerCompany").innerText = localName;
+  }
+}
+
+// -------- CSV Upload ----------
+async function uploadCSV() {
+  const file = document.getElementById("csvFile").files[0];
+  if (!file) return alert("Select CSV");
+
+  if (!TENANT_ID) return alert("Not logged in");
+
+  const form = new FormData();
+  form.append("tenant_id", TENANT_ID);
+  form.append("file", file);
+
+  const res = await fetch("/api/upload", { method: "POST", body: form });
+  const data = await res.json();
+  showResult(data);
+}
+
+// -------- Create rule ----------
+async function createRule() {
+  if (!TENANT_ID) return alert("Not logged in");
+
+  const lead_days = (document.getElementById("leadDays").value || '')
+    .split(',').map(x => parseInt(x.trim())).filter(Boolean);
+
+  const channels = [];
+  if (document.getElementById("chEmail").checked) channels.push("email");
+  if (document.getElementById("chSMS").checked) channels.push("sms");
+
+  const body = {
+    tenant_id: TENANT_ID,
+    name: "Expiry Reminder",
+    lead_days,
+    channels,
+    template: document.getElementById("template").value
+  };
+
+  const res = await fetch("/api/rules", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body)
+  });
+
+  const data = await res.json();
+  showResult(data);
+}
+
+// -------- Live preview ----------
+document.getElementById("template").addEventListener("input", updatePreview);
+function updatePreview() {
+  let t = document.getElementById("template").value || '';
+  t = t.replace('{{first_name}}', 'John').replace('{{expiry_date}}', '2026-03-20');
+  document.getElementById("previewText").innerText = t;
+}
+updatePreview();
+
+// copy preview text
+function previewToClipboard() {
+  const txt = document.getElementById("previewText").innerText;
+  navigator.clipboard.writeText(txt).then(()=> {
+    showResult({ success: true, copied: txt });
+  });
+}
+
+// -------- Test send (immediate) ----------
+async function testSend() {
+  if (!TENANT_ID) return alert("Not logged in");
+
+  const customer_id = document.getElementById("testCustomerId").value.trim();
+  const channel = document.getElementById("testChannel").value;
+
+  if (!customer_id) return alert("Enter Customer ID");
+
+  const payload = { tenant_id: TENANT_ID, customer_id, channel };
+
+  const res = await fetch("/api/test-send", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+
+  const data = await res.json();
+  showResult(data);
+}
+
+// -------- Message history ----------
+async function loadHistory() {
+  if (!TENANT_ID) return document.getElementById("historyTable").innerText = "Not logged in";
+
+  document.getElementById("historyStatus").innerText = "Loading...";
+  const res = await fetch(`/api/history/${TENANT_ID}`);
+  const data = await res.json();
+  document.getElementById("historyStatus").innerText = "";
+
+  if (!Array.isArray(data)) {
+    document.getElementById("historyTable").innerText = JSON.stringify(data, null, 2);
+    return;
+  }
+
+  let html = `<table class="w-full text-left border border-gray-700 text-xs">
+    <thead class="text-saffron">
+      <tr><th class="p-2">ID</th><th class="p-2">Customer</th><th class="p-2">Channel</th><th class="p-2">Status</th><th class="p-2">Scheduled</th></tr>
+    </thead><tbody>`;
+
+  data.forEach(j => {
+    html += `<tr class="border-t border-gray-700">
+      <td class="p-2">${j.id}</td>
+      <td class="p-2">${j.customer_id || j.customer_id}</td>
+      <td class="p-2">${j.channel}</td>
+      <td class="p-2">${j.status}</td>
+      <td class="p-2">${j.scheduled_at ? new Date(j.scheduled_at).toLocaleString() : ''}</td>
+    </tr>`;
+  });
+
+  html += `</tbody></table>`;
+  document.getElementById("historyTable").innerHTML = html;
+}
+
+// -------- Demo: send all now (optional backend required) ----------
+async function sendNowDemo() {
+  if (!confirm("Send all pending tenant messages now? (demo)")) return;
+  const res = await fetch("/api/send-now", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({ tenant_id: TENANT_ID })
+  });
+  const data = await res.json();
+  showResult(data);
+  // reload history after a short delay to show sent status
+  setTimeout(loadHistory, 1500);
+}
+
+// -------- small utility ----------
+function showResult(obj) {
+  document.getElementById("result").innerText = JSON.stringify(obj, null, 2);
+  console.log(obj);
+}
+</script>
+
+</body>
+</html> -->

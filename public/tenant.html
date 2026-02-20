@@ -1,0 +1,205 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Expiry Notifier — Tenant</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --brand: #0b3d91;
+      --accent: #F4A300;
+    }
+    body { background: #f7fafc; color: #0b1726; }
+    .card { background: white; border-radius: 10px; box-shadow: 0 6px 18px rgba(15,23,42,0.06); }
+  </style>
+</head>
+
+<body class="min-h-screen antialiased">
+
+<header class="border-b border-gray-200">
+  <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="rounded-md p-2 bg-white/60">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+          <path d="M3 12h18" stroke="var(--brand)" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M6 6h12" stroke="var(--brand)" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M6 18h8" stroke="var(--brand)" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div>
+        <h1 class="text-lg font-semibold" style="color:var(--brand)">Tenant Dashboard</h1>
+        <p class="text-xs text-gray-500">Usage · Expiries · Billing</p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-4">
+      <div id="companyName" class="text-sm text-gray-700"></div>
+      <button id="logoutBtn" class="text-sm border border-gray-200 px-3 py-1 rounded hover:bg-gray-50">Logout</button>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-6xl mx-auto px-6 py-8 space-y-8">
+
+  <section class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div class="card p-4">
+      <div class="flex items-start justify-between">
+        <div>
+          <p class="text-sm text-gray-500">Plan</p>
+          <p id="plan" class="text-xl font-bold">—</p>
+        </div>
+        <button id="openUpgradeBtn" class="bg-yellow-400 text-black px-3 py-1 rounded text-sm">
+          Upgrade
+        </button>
+      </div>
+    </div>
+
+    <div class="card p-4">
+      <p class="text-sm text-gray-500">Reminders Used</p>
+      <p id="used" class="text-xl font-bold text-yellow-500">0</p>
+    </div>
+
+    <div class="card p-4">
+      <p class="text-sm text-gray-500">Limit</p>
+      <p id="limit" class="text-xl font-bold">0</p>
+    </div>
+
+    <div class="card p-4">
+      <p class="text-sm text-gray-500">Failed</p>
+      <p id="failed" class="text-xl font-bold text-red-500">0</p>
+    </div>
+  </section>
+
+  <section class="card p-6">
+    <h2 class="text-lg font-semibold mb-4" style="color:var(--brand)">
+      Upcoming Expiries (Next 30 Days)
+    </h2>
+
+    <table class="w-full text-sm">
+      <thead class="text-left text-gray-600">
+        <tr>
+          <th class="p-2">Customer</th>
+          <th class="p-2">Expiry Date</th>
+          <th class="p-2">Days Left</th>
+        </tr>
+      </thead>
+      <tbody id="expiryTable"></tbody>
+    </table>
+  </section>
+
+  <section class="card p-6">
+    <h3 class="text-lg font-semibold mb-4" style="color:var(--brand)">
+      Recent Reminders
+    </h3>
+    <table class="w-full text-sm">
+      <thead class="text-left text-gray-600">
+        <tr>
+          <th class="p-2">Channel</th>
+          <th class="p-2">Customer</th>
+          <th class="p-2">Status</th>
+          <th class="p-2">Time</th>
+        </tr>
+      </thead>
+      <tbody id="jobsTable"></tbody>
+    </table>
+  </section>
+
+</main>
+
+<script>
+const token = localStorage.getItem("token");
+const companyName = localStorage.getItem("company_name") || "";
+
+if (!token) location.href = "/";
+
+document.getElementById("companyName").innerText = companyName;
+
+document.getElementById("logoutBtn").addEventListener("click", () => {
+  localStorage.removeItem("token");
+  localStorage.removeItem("company_name");
+  location.href = "/";
+});
+
+document.getElementById("openUpgradeBtn").addEventListener("click", () => {
+  location.href = "/home.html#pricing";
+});
+
+/* Load Stats */
+async function loadStats() {
+  const res = await fetch("/api/tenant/stats", {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  const data = await res.json();
+
+  document.getElementById("plan").innerText = (data.plan || "-").toUpperCase();
+  document.getElementById("used").innerText = data.jobs_used ?? 0;
+  document.getElementById("limit").innerText = data.job_limit ?? 0;
+  document.getElementById("failed").innerText = data.failed_jobs ?? 0;
+}
+
+/* Load Recent Reminders */
+async function loadJobs() {
+  const res = await fetch("/api/jobs", {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+
+  const jobs = await res.json();
+  const tbody = document.getElementById("jobsTable");
+  tbody.innerHTML = "";
+
+  jobs.slice(0,10).forEach(j => {
+    const tr = document.createElement("tr");
+    tr.className = "border-t";
+    tr.innerHTML = `
+      <td class="p-2">${(j.channel || "").toUpperCase()}</td>
+      <td class="p-2">${j.recipient || ""}</td>
+      <td class="p-2 ${j.status === "sent" ? "text-green-600" : "text-red-600"}">${j.status}</td>
+      <td class="p-2 text-gray-600">${new Date(j.created_at).toLocaleString()}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+/* Load Upcoming Expiries */
+async function loadExpiries() {
+  try {
+    const res = await fetch("/api/tenant/upcoming-expiries", {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    if (!res.ok) {
+      console.error("Upcoming expiries failed:", await res.text());
+      return;
+    }
+
+    const customers = await res.json();
+    console.log("Upcoming expiries:", customers);
+
+    const tbody = document.getElementById("expiryTable");
+    tbody.innerHTML = "";
+
+    customers.forEach(c => {
+      const tr = document.createElement("tr");
+      tr.className = "border-t";
+      tr.innerHTML = `
+        <td class="p-2">${c.customer_name || c.first_name || ""}</td>
+        <td class="p-2">${new Date(c.expiry_date).toLocaleDateString()}</td>
+        <td class="p-2">${c.days_left} days</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+  } catch (err) {
+    console.error("Error loading expiries:", err);
+  }
+}
+
+
+loadStats();
+loadJobs();
+loadExpiries();
+</script>
+
+</body>
+</html> -->

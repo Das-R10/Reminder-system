@@ -1,0 +1,23 @@
+{
+  "name": "expiry-notifier",
+  "version": "0.1.0",
+  "description": "Minimal skeleton for subscription expiry notifier (Part 1)",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "@sendgrid/mail": "^8.1.6",
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.6",
+    "csv-parse": "^5.6.0",
+    "dotenv": "^16.6.1",
+    "express": "^4.22.1",
+    "google-auth-library": "^10.5.0",
+    "jsonwebtoken": "^9.0.3",
+    "multer": "^1.4.5-lts.1",
+    "pg": "^8.18.0",
+    "razorpay": "^2.9.6",
+    "twilio": "^5.12.2"
+  }
+}

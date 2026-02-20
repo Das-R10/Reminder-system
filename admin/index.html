@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Expiry Notifier — Admin (Sci-Fi)</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    :root{
+      --bg:#070710;
+      --panel:#0b0b14;
+      --muted:#9aa0b4;
+      --neon:#7cf7ff; /* cyan */
+      --accent:#b388ff; /* purple */
+      --danger:#ff6b6b;
+      --glass: rgba(255,255,255,0.03);
+    }
+    html,body { height:100%; }
+    body{
+      background: radial-gradient(1200px 600px at 10% 10%, rgba(124,247,255,0.04), transparent 6%),
+                  radial-gradient(900px 400px at 90% 90%, rgba(179,136,255,0.03), transparent 5%),
+                  var(--bg);
+      color:#dbeafe;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      -webkit-font-smoothing:antialiased;
+    }
+    .panel { background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border:1px solid rgba(255,255,255,0.03); box-shadow: 0 10px 30px rgba(2,6,23,0.6); border-radius:12px; }
+    .kpi { background: linear-gradient(90deg, rgba(124,247,255,0.02), rgba(179,136,255,0.02)); border:1px solid rgba(124,247,255,0.06); }
+    .glow { text-shadow: 0 0 8px rgba(124,247,255,0.08); }
+    .muted { color: var(--muted); }
+    .neon { color: var(--neon); }
+    .accent { color: var(--accent); }
+    .btn-ghost { background: transparent; border:1px solid rgba(255,255,255,0.04); padding:.5rem .8rem; border-radius:8px; }
+    a { color: inherit; }
+    .table-scroll { max-height:36vh; overflow:auto; }
+    /* subtle animated grid in background */
+    .grid-bg {
+      position: fixed; inset:0; pointer-events:none; opacity:.025; background-image:
+      linear-gradient(transparent 95%, rgba(124,247,255,0.03) 95%),
+      linear-gradient(90deg, transparent 95%, rgba(124,247,255,0.03) 95%);
+      background-size: 200px 200px, 200px 200px;
+      transform: translateZ(0);
+    }
+  </style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+
+<div class="max-w-7xl mx-auto p-6">
+
+  <!-- header -->
+  <header class="flex items-center justify-between mb-6">
+    <div class="flex items-center gap-4">
+      <div class="w-12 h-12 bg-gradient-to-br from-[#071428] to-[#0b0b14] rounded-lg flex items-center justify-center border border-[rgba(124,247,255,0.06)]">
+        <!-- stylized icon -->
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M3 12h18" stroke="var(--neon)" stroke-width="1.6" stroke-linecap="round"/><path d="M6 6h12" stroke="var(--accent)" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </div>
+      <div>
+        <h1 class="text-2xl font-bold neon glow">Expiry Notifier — Admin</h1>
+        <div class="text-xs muted">Real-time analytics · purchases · tenant management</div>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <button id="refreshAll" title="Refresh data" class="btn-ghost muted hover:text-white">🔄 Refresh</button>
+      <button id="exportCSV" class="btn-ghost muted">⬇ Export CSV</button>
+      <div id="adminActions" class="flex items-center gap-2">
+        <button id="logoutBtn" class="px-3 py-1 rounded bg-[#0f1724] hover:bg-[#131827]">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- layout -->
+  <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+
+    <!-- left: KPIs & purchases -->
+    <div class="lg:col-span-1 space-y-6">
+
+      <div class="panel p-4">
+        <h3 class="text-sm muted">Overview</h3>
+        <div class="grid grid-cols-2 gap-3 mt-3">
+          <div class="kpi p-3">
+            <div class="text-xs muted">Tenants</div>
+            <div id="totalTenants" class="text-2xl font-bold neon">—</div>
+          </div>
+          <div class="kpi p-3">
+            <div class="text-xs muted">Total Jobs</div>
+            <div id="totalJobs" class="text-2xl font-bold neon">—</div>
+          </div>
+
+          <div class="kpi p-3">
+            <div class="text-xs muted">Sent</div>
+            <div id="sentJobs" class="text-2xl font-bold accent">—</div>
+          </div>
+          <div class="kpi p-3">
+            <div class="text-xs muted">Failed</div>
+            <div id="failedJobs" class="text-2xl font-bold" style="color:var(--danger)">—</div>
+          </div>
+        </div>
+
+        <div class="mt-4 border-t border-white/5 pt-3">
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="text-xs muted">Monthly Revenue</div>
+              <div id="monthlyRev" class="text-xl font-semibold neon">₹—</div>
+            </div>
+            <div class="text-sm muted">Growth <span id="revPct" class="accent">—%</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel p-4">
+        <h3 class="text-sm muted">Recent Purchases</h3>
+        <div id="purchasesList" class="mt-3 space-y-2 table-scroll">
+          <!-- items inserted by JS -->
+        </div>
+      </div>
+
+      <div class="panel p-4">
+        <h3 class="text-sm muted">Quick Actions</h3>
+        <div class="mt-3 grid grid-cols-1 gap-2">
+          <button onclick="simulatePurchase()" class="w-full px-3 py-2 rounded bg-gradient-to-r from-[#1b2538] to-[#172033]">Simulate Purchase</button>
+          <button onclick="clearCache()" class="w-full px-3 py-2 rounded border border-white/5">Clear Cache</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- middle: charts -->
+    <div class="lg:col-span-2 space-y-6">
+      <div class="panel p-4">
+        <div class="flex items-start justify-between">
+          <div>
+            <h3 class="font-semibold text-lg neon">Usage — Last 30 days</h3>
+            <div class="text-xs muted mt-1">Jobs scheduled and sent over time</div>
+          </div>
+          <div class="text-xs muted">Last updated <span id="lastUpdated">—</span></div>
+        </div>
+
+        <div class="mt-4">
+          <canvas id="jobsChart" height="140"></canvas>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-6">
+        <div class="panel p-4">
+          <h4 class="muted text-sm mb-2">Channel split</h4>
+          <canvas id="channelPie" height="180"></canvas>
+        </div>
+
+        <div class="panel p-4">
+          <h4 class="muted text-sm mb-2">Purchases by Plan</h4>
+          <canvas id="purchasesBar" height="180"></canvas>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- right: tenants table -->
+    <div class="lg:col-span-1">
+      <div class="panel p-4">
+        <div class="flex items-center justify-between">
+          <h3 class="text-sm muted">Tenants</h3>
+          <input id="tenantSearch" placeholder="Search..." class="bg-transparent border border-white/5 rounded px-2 py-1 text-sm muted" />
+        </div>
+
+        <div class="mt-3 table-scroll">
+          <table class="w-full text-sm">
+            <thead class="text-xs muted">
+              <tr>
+                <th class="p-2 text-left">Company</th>
+                <th class="p-2 text-left">Plan</th>
+              </tr>
+            </thead>
+            <tbody id="tenantTable" class="text-gray-200"></tbody>
+          </table>
+        </div>
+
+        <div class="mt-3 flex gap-2">
+          <button id="viewAllTenants" class="w-full px-3 py-2 rounded border border-white/5">View All</button>
+          <button id="forceRetry" class="px-3 py-2 rounded bg-[#1f1b3a]">Retry Failed</button>
+        </div>
+      </div>
+
+      <div class="panel p-4 mt-4">
+        <h4 class="muted text-sm">System Log</h4>
+        <pre id="adminLog" class="text-xs mt-2 bg-[rgba(255,255,255,0.02)] p-3 rounded max-h-48 overflow-auto muted">Live system events will appear here.</pre>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* Admin sci-fi UI script
+   - Uses /api/admin/* endpoints if reachable
+   - Falls back to demo data for visualization
+*/
+const token = localStorage.getItem('admin_token'); // your existing admin token flow
+const authHeaders = () => ({ 'Content-Type':'application/json', ...(token?{ Authorization: `Bearer ${token}` }:{}) });
+
+// DOM refs
+const totalTenantsEl = document.getElementById('totalTenants');
+const totalJobsEl = document.getElementById('totalJobs');
+const sentJobsEl = document.getElementById('sentJobs');
+const failedJobsEl = document.getElementById('failedJobs');
+const monthlyRevEl = document.getElementById('monthlyRev');
+const revPctEl = document.getElementById('revPct');
+const purchasesListEl = document.getElementById('purchasesList');
+const lastUpdatedEl = document.getElementById('lastUpdated');
+const tenantTableEl = document.getElementById('tenantTable');
+const adminLogEl = document.getElementById('adminLog');
+const tenantSearch = document.getElementById('tenantSearch');
+
+// Chart instances
+let jobsChart, channelPie, purchasesBar;
+
+// demo fallback data
+function demoData() {
+  const now = new Date();
+  const days = Array.from({length:30}, (_,i) => {
+    const d = new Date(now); d.setDate(now.getDate()- (29-i));
+    return { date: d.toISOString().slice(0,10), scheduled: Math.floor(40 + Math.random()*60), sent: Math.floor(30 + Math.random()*50) };
+  });
+  const tenants = Array.from({length:12}, (_,i)=> ({company_name:`Acme ${i+1}`, plan: i%3===0 ? 'Enterprise': (i%2? 'Business':'Starter'), email:`owner${i+1}@acme.com`, created_at: new Date(Date.now()-i*86400000).toISOString()}));
+  const purchases = [
+    {company:'Acme 7', plan:'Starter', amount:999, at: new Date().toISOString()},
+    {company:'Beta Ltd', plan:'Business', amount:3999, at: new Date(Date.now()-3600000).toISOString()},
+    {company:'Gamma Co', plan:'Starter', amount:999, at: new Date(Date.now()-7200000).toISOString()},
+  ];
+  return { days, tenants, purchases, stats: { tenants: tenants.length, total_jobs: days.reduce((s,d)=>s+d.scheduled,0), sent: days.reduce((s,d)=>s+d.sent,0), failed: Math.floor(Math.random()*10), monthly_rev: 120000, rev_pct: 7 } };
+}
+
+// helper to append log
+function log(msg){
+  const time = new Date().toLocaleTimeString();
+  adminLogEl.innerText = `[${time}] ${msg}\n` + adminLogEl.innerText;
+}
+
+// load all
+async function refreshAll() {
+  log('Refreshing data...');
+  const now = new Date();
+  lastUpdatedEl.innerText = now.toLocaleString();
+
+  let apiStats=null, apiTenants=null, apiPurchases=null, days=null;
+
+  // try fetch stats
+  try {
+    const res = await fetch('/api/admin/stats', { headers: authHeaders() });
+    if (res.ok) apiStats = await res.json();
+    else log('admin/stats returned ' + res.status);
+  } catch (e) { log('admin/stats fetch failed'); }
+
+  // try fetch tenants
+  try {
+    const res2 = await fetch('/api/admin/tenants', { headers: authHeaders() });
+    if (res2.ok) apiTenants = await res2.json();
+    else log('admin/tenants returned ' + res2.status);
+  } catch (e) { log('admin/tenants fetch failed'); }
+
+  // try fetch purchases (if you have endpoint)
+  try {
+    const res3 = await fetch('/api/admin/purchases', { headers: authHeaders() });
+    if (res3.ok) apiPurchases = await res3.json();
+    else log('/api/admin/purchases returned ' + res3.status);
+  } catch (e) { log('admin/purchases fetch failed'); }
+
+  // If any required data missing, use demo
+  const demo = demoData();
+  const stats = apiStats || {
+    total_tenants: demo.stats.tenants,
+    total_jobs: demo.stats.total_jobs,
+    sent_jobs: demo.stats.sent,
+    failed_jobs: demo.stats.failed,
+    monthly_revenue: demo.stats.monthly_rev,
+    revenue_pct: demo.stats.rev_pct
+  };
+  const tenants = apiTenants && Array.isArray(apiTenants) ? apiTenants : demo.tenants;
+  const purchases = apiPurchases && Array.isArray(apiPurchases) ? apiPurchases : demo.purchases;
+  days = demo.days;
+
+  // update KPIs
+  totalTenantsEl.innerText = stats.total_tenants ?? '—';
+  totalJobsEl.innerText = stats.total_jobs ?? '—';
+  sentJobsEl.innerText = stats.sent_jobs ?? '—';
+  failedJobsEl.innerText = stats.failed_jobs ?? '—';
+  monthlyRevEl.innerText = '₹' + ((stats.monthly_revenue || stats.monthly_rev || 0).toLocaleString());
+  revPctEl.innerText = ((stats.revenue_pct || stats.rev_pct || 0) + '%');
+
+  // purchases list
+  purchasesListEl.innerHTML = '';
+  (purchases.slice(0,6)).forEach(p => {
+    const div = document.createElement('div');
+    div.className = 'flex items-center justify-between gap-3 p-2 rounded bg-[rgba(255,255,255,0.015)]';
+    div.innerHTML = `<div>
+        <div class="text-sm neon">${p.company}</div>
+        <div class="text-xs muted">${p.plan} · ${new Date(p.at || p.created_at || Date.now()).toLocaleString()}</div>
+      </div>
+      <div class="text-sm font-semibold">${p.amount? '₹'+p.amount : '—'}</div>`;
+    purchasesListEl.appendChild(div);
+  });
+
+  // tenant table
+  tenantTableEl.innerHTML = '';
+  tenants.slice(0,50).forEach(t => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td class="p-2">${t.company_name || t.name || t.company}</td><td class="p-2">${t.plan||t.role|| '—'}</td>`;
+    tenantTableEl.appendChild(tr);
+  });
+
+  // update charts
+  renderCharts(days, purchases, tenants);
+
+  log('Data refreshed');
+}
+
+// chart rendering
+function renderCharts(days, purchases, tenants) {
+  const labels = days.map(d=>d.date);
+  const scheduled = days.map(d=>d.scheduled);
+  const sent = days.map(d=>d.sent);
+
+  // jobsChart
+  const ctx = document.getElementById('jobsChart').getContext('2d');
+  if (jobsChart) jobsChart.destroy();
+  jobsChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets:[
+        { label: 'Scheduled', data: scheduled, borderColor: 'rgba(124,247,255,0.9)', backgroundColor:'rgba(124,247,255,0.06)', pointRadius:0, fill:true, tension:0.25 },
+        { label: 'Sent', data: sent, borderColor: 'rgba(179,136,255,0.9)', backgroundColor:'rgba(179,136,255,0.04)', pointRadius:0, fill:true, tension:0.25 }
+      ]
+    },
+    options:{
+      interaction:{mode:'index', intersect:false}, plugins:{legend:{labels:{color:'#cbd5e1'}}}, scales:{x:{ticks:{color:'#9aa0b4'}}, y:{ticks:{color:'#9aa0b4'}}}
+    }
+  });
+
+  // channelPie
+  const channelCtx = document.getElementById('channelPie').getContext('2d');
+  const email = Math.floor(Math.random()*70)+30;
+  const sms = Math.floor(Math.random()*(100-email));
+  const other = Math.max(0, 100 - email - sms);
+  if (channelPie) channelPie.destroy();
+  channelPie = new Chart(channelCtx, {
+    type: 'doughnut',
+    data: { labels:['Email','SMS','Other'], datasets:[{data:[email,sms,other], backgroundColor:['#7cf7ff','#b388ff','#ffd166']}]},
+    options:{plugins:{legend:{position:'bottom', labels:{color:'#cbd5e1'}}}}
+  });
+
+  // purchasesBar (plans)
+  const barCtx = document.getElementById('purchasesBar').getContext('2d');
+  const plans = {};
+  (purchases||[]).forEach(p => plans[p.plan] = (plans[p.plan]||0) + (p.amount||0));
+  const planLabels = Object.keys(plans);
+  const planValues = planLabels.map(k => plans[k]);
+  if (purchasesBar) purchasesBar.destroy();
+  purchasesBar = new Chart(barCtx, {
+    type:'bar',
+    data:{ labels: planLabels, datasets:[{label:'Revenue', data:planValues, backgroundColor:['#7cf7ff','#b388ff','#ffd166']}]},
+    options:{plugins:{legend:{display:false}}, scales:{y:{ticks:{color:'#9aa0b4'}}, x:{ticks:{color:'#9aa0b4'}}}}
+  });
+}
+
+// event bindings
+document.getElementById('refreshAll').addEventListener('click', refreshAll);
+document.getElementById('exportCSV').addEventListener('click', exportCSV);
+document.getElementById('logoutBtn').addEventListener('click', () => { localStorage.removeItem('admin_token'); location.reload(); });
+tenantSearch.addEventListener('input', (e)=> { filterTenants(e.target.value); });
+
+function filterTenants(q) {
+  const rows = Array.from(tenantTableEl.children);
+  rows.forEach(r => {
+    const txt = r.innerText.toLowerCase();
+    r.style.display = txt.includes(q.toLowerCase()) ? '' : 'none';
+  });
+}
+
+// CSV export (from the tenants table)
+function exportCSV(){
+  const rows = [['Company','Plan']];
+  Array.from(tenantTableEl.children).forEach(tr => {
+    const cols = Array.from(tr.children).map(td => td.innerText.trim());
+    rows.push(cols);
+  });
+  const csv = rows.map(r => r.map(cell => `"${(cell||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = `tenants_${Date.now()}.csv`; a.click();
+  URL.revokeObjectURL(url);
+  log('Exported CSV');
+}
+
+// admin actions demo
+function simulatePurchase(){
+  const demoPurchase = { company:'DemoCorp', plan:'Starter', amount:999, at:new Date().toISOString() };
+  purchasesListEl.insertAdjacentHTML('afterbegin', `<div class="flex items-center justify-between gap-3 p-2 rounded bg-[rgba(255,255,255,0.015)]"><div><div class="text-sm neon">${demoPurchase.company}</div><div class="text-xs muted"> ${demoPurchase.plan} · now</div></div><div class="text-sm font-semibold">₹${demoPurchase.amount}</div></div>`);
+  log('Simulated purchase for ' + demoPurchase.company);
+}
+
+// clear cache
+function clearCache(){
+  localStorage.removeItem('admin_token');
+  log('Local storage cleared (admin_token removed)');
+  alert('Local cache cleared.');
+}
+
+// initial load
+refreshAll();
+
+// small periodic refresh to keep dashboard alive
+setInterval(() => {
+  refreshAll();
+}, 1000*60*3); // every 3 minutes
+
+</script>
+
+</body>
+</html>

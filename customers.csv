@@ -1,0 +1,4 @@
+customer_id,first_name,last_name,email,phone,expiry_date,plan
+C001,Anita,Das,reyandas10@gmail.com,+919875580007,2026-02-15,Basic
+C002,Rahul,Sharma,rahul@example.com,,2026-02-20,Pro
+C003,NoEmail,,,+919999999999,2026-02-25,Trial
