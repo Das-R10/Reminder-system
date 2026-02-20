@@ -25,8 +25,37 @@ async function initDB() {
       CREATE TABLE IF NOT EXISTS tenants (
         id SERIAL PRIMARY KEY,
         name TEXT NOT NULL,
+        email TEXT UNIQUE,
+        password TEXT,
+        role TEXT DEFAULT 'user',
+        plan TEXT DEFAULT 'free',
+        jobs_used INT DEFAULT 0,
+        job_limit INT DEFAULT 100,
         created_at TIMESTAMPTZ DEFAULT now()
       );
+    `);
+
+    // Add columns to tenants table if they don't exist (for existing databases)
+    await client.query(`
+      ALTER TABLE tenants
+      ADD COLUMN IF NOT EXISTS email TEXT,
+      ADD COLUMN IF NOT EXISTS password TEXT,
+      ADD COLUMN IF NOT EXISTS role TEXT DEFAULT 'user',
+      ADD COLUMN IF NOT EXISTS plan TEXT DEFAULT 'free',
+      ADD COLUMN IF NOT EXISTS jobs_used INT DEFAULT 0,
+      ADD COLUMN IF NOT EXISTS job_limit INT DEFAULT 100;
+    `);
+
+    // Add unique constraint on email if it doesn't exist
+    await client.query(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM pg_constraint WHERE conname = 'tenants_email_key'
+        ) THEN
+          ALTER TABLE tenants ADD CONSTRAINT tenants_email_key UNIQUE (email);
+        END IF;
+      END $$;
     `);
 
     // Customers
@@ -85,34 +114,6 @@ async function initDB() {
 
     // Optional: deliveries table (kept out for now — can add later)
 
-    // Tenant columns required by signup/login and tenant routes (add if not present)
-    await client.query(`
-      ALTER TABLE tenants
-        ADD COLUMN IF NOT EXISTS email TEXT,
-        ADD COLUMN IF NOT EXISTS password TEXT,
-        ADD COLUMN IF NOT EXISTS role TEXT DEFAULT 'user',
-        ADD COLUMN IF NOT EXISTS plan TEXT DEFAULT 'free',
-        ADD COLUMN IF NOT EXISTS jobs_used INT DEFAULT 0,
-        ADD COLUMN IF NOT EXISTS job_limit INT DEFAULT 100;
-    `);
-    await client.query(`
-      CREATE UNIQUE INDEX IF NOT EXISTS tenants_email_unique
-      ON tenants (email) WHERE email IS NOT NULL;
-    `);
-
-    // purchase_requests: used by /api/tenant/purchase (safe defaults)
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS purchase_requests (
-        id SERIAL PRIMARY KEY,
-        tenant_id INT NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
-        plan TEXT NOT NULL,
-        amount INT NOT NULL,
-        payment_method TEXT NOT NULL,
-        status TEXT NOT NULL DEFAULT 'pending',
-        created_at TIMESTAMPTZ DEFAULT now()
-      );
-    `);
-
     // Insert a demo tenant if none exists (helps quick local testing)
     await client.query(`
       INSERT INTO tenants (name)
@@ -135,7 +136,18 @@ async function initDB() {
       ADD COLUMN IF NOT EXISTS message TEXT;
     `);
 
-
+    // Purchase requests
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS purchase_requests (
+        id SERIAL PRIMARY KEY,
+        tenant_id INT NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+        plan TEXT NOT NULL,
+        amount INT NOT NULL,
+        payment_method TEXT NOT NULL,
+        status TEXT DEFAULT 'pending',
+        created_at TIMESTAMPTZ DEFAULT now()
+      );
+    `);
 
     await client.query('COMMIT');
     console.log('✅ Database initialized / migrations applied.');
@@ -281,23 +293,8 @@ async function markJobFailed(job_id, error) {
   );
 }
 
-/** Find tenant by email; if none, create one with name/email and default plan. Used by /api/google-login. */
-async function findOrCreateTenant(email, name) {
-  const selectRes = await pool.query(
-    'SELECT * FROM tenants WHERE email = $1',
-    [email]
-  );
-  if (selectRes.rows.length > 0) {
-    return selectRes.rows[0];
-  }
-  const { rows } = await pool.query(
-    `INSERT INTO tenants (name, email, role, plan, jobs_used, job_limit)
-     VALUES ($1, $2, 'user', 'free', 0, 100)
-     RETURNING *`,
-    [name || email, email]
-  );
-  return rows[0];
-}
+
+
 
 module.exports = {
   pool,
@@ -309,8 +306,7 @@ module.exports = {
   createJob,
   getPendingJobs,
   markJobSent,
-  markJobFailed,
-  findOrCreateTenant
+  markJobFailed
 };
 
 

@@ -28,8 +28,7 @@ const {
   createJob,
   getPendingJobs,
   markJobSent,
-  markJobFailed,
-  findOrCreateTenant
+  markJobFailed
 } = require('./db');
 
 if (process.env.SENDGRID_API_KEY) {
@@ -254,6 +253,29 @@ async function start() {
 
 
 
+  // Helper function: find or create tenant by email
+  async function findOrCreateTenant(email, name) {
+    // Try to find existing tenant by email
+    const existing = await pool.query(
+      "SELECT * FROM tenants WHERE email = $1",
+      [email]
+    );
+
+    if (existing.rows.length > 0) {
+      return existing.rows[0];
+    }
+
+    // Create new tenant
+    const result = await pool.query(
+      `INSERT INTO tenants (name, email, role)
+       VALUES ($1, $2, 'user')
+       RETURNING *`,
+      [name || email.split('@')[0], email]
+    );
+
+    return result.rows[0];
+  }
+
   app.post("/api/google-login", async (req, res) => {
     try {
         const { token } = req.body;
@@ -270,7 +292,23 @@ async function start() {
         // create or find tenant
         const tenant = await findOrCreateTenant(email, name);
 
-        res.json({ tenant_id: tenant.id });
+        // Issue JWT token (same format as /api/login)
+        const jwtToken = jwt.sign(
+          {
+            id: tenant.id,
+            role: tenant.role || 'user',
+            email: tenant.email,
+            company_name: tenant.name
+          },
+          JWT_SECRET,
+          { expiresIn: "1d" }
+        );
+
+        res.json({
+          token: jwtToken,
+          role: tenant.role || 'user',
+          company_name: tenant.name
+        });
     } catch (err) {
         console.error(err);
         res.status(401).json({ error: "Invalid Google token" });
