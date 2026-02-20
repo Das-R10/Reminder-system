@@ -98,8 +98,9 @@ async function initDB() {
         rule_id INT REFERENCES rules(id) ON DELETE CASCADE,
         channel TEXT,
         scheduled_at TIMESTAMPTZ,
-        status TEXT DEFAULT 'pending', -- pending, queued, sent, delivered, failed
+        status TEXT DEFAULT 'pending', -- pending, queued, sent, delivered, failed, permanent_failed
         attempts INT DEFAULT 0,
+        retry_count INT DEFAULT 0,
         last_error TEXT,
         provider_msg_id TEXT,
         created_at TIMESTAMPTZ DEFAULT now()
@@ -133,7 +134,8 @@ async function initDB() {
     await client.query(`
       ALTER TABLE jobs
       ADD COLUMN IF NOT EXISTS recipient TEXT,
-      ADD COLUMN IF NOT EXISTS message TEXT;
+      ADD COLUMN IF NOT EXISTS message TEXT,
+      ADD COLUMN IF NOT EXISTS retry_count INT DEFAULT 0;
     `);
 
     // Purchase requests
@@ -286,10 +288,25 @@ async function markJobFailed(job_id, error) {
   await pool.query(
     `
     UPDATE jobs
-    SET status='failed', attempts=attempts+1, last_error=$2
+    SET status='permanent_failed', attempts=attempts+1, last_error=$2
     WHERE id=$1
     `,
     [job_id, error]
+  );
+}
+
+async function rescheduleJob(job_id, delayMinutes, error) {
+  await pool.query(
+    `
+    UPDATE jobs
+    SET scheduled_at = NOW() + ($2 * INTERVAL '1 minute'),
+        retry_count = COALESCE(retry_count, 0) + 1,
+        attempts = attempts + 1,
+        status = 'pending',
+        last_error = $3
+    WHERE id = $1
+    `,
+    [job_id, delayMinutes, error]
   );
 }
 
@@ -306,7 +323,8 @@ module.exports = {
   createJob,
   getPendingJobs,
   markJobSent,
-  markJobFailed
+  markJobFailed,
+  rescheduleJob
 };
 
 

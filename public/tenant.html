@@ -108,6 +108,44 @@
     </table>
   </section>
 
+  <!-- CREATE REMINDERS (CSV) -->
+  <section class="card p-6">
+    <h3 class="text-lg font-semibold mb-4" style="color:var(--brand)">
+      Create Reminders (CSV Upload)
+    </h3>
+
+    <div class="flex flex-col md:flex-row md:items-center gap-4">
+      <input
+        id="jobsCsvFile"
+        type="file"
+        accept=".csv"
+        class="block w-full text-sm text-gray-700 file:bg-[var(--accent)] file:text-black file:px-4 file:py-2 file:border-none file:rounded-md cursor-pointer border border-dashed border-gray-300 rounded-md p-2 bg-white"
+      />
+
+      <button
+        id="jobsCsvUploadBtn"
+        class="inline-flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium text-white"
+        style="background:var(--brand)"
+      >
+        <span id="bulkUploadSpinner" class="hidden mr-2">
+          <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3.5-3.5L12 0v4a8 8 0 00-8 8h4z"></path>
+          </svg>
+        </span>
+        <span>Upload CSV</span>
+      </button>
+    </div>
+
+    <p class="mt-2 text-xs text-gray-500">
+      CSV must have columns: <code>channel</code>, <code>recipient</code>, <code>message</code>.
+      Channel must be <strong>email</strong> or <strong>sms</strong>.
+    </p>
+
+    <div id="bulkUploadStatus" class="mt-3 text-sm text-gray-600"></div>
+    <div id="bulkUploadResult" class="mt-3 text-xs text-gray-700"></div>
+  </section>
+
 </main>
 
 <script>
@@ -164,6 +202,95 @@ async function loadJobs() {
   });
 }
 
+/* Bulk CSV upload */
+async function bulkUploadJobs() {
+  const fileInput = document.getElementById("jobsCsvFile");
+  const file = fileInput.files[0];
+  const statusEl = document.getElementById("bulkUploadStatus");
+  const resultEl = document.getElementById("bulkUploadResult");
+  const spinner = document.getElementById("bulkUploadSpinner");
+
+  if (!file) {
+    statusEl.textContent = "Please select a CSV file.";
+    return;
+  }
+
+  statusEl.textContent = "";
+  resultEl.innerHTML = "";
+  spinner.classList.remove("hidden");
+
+  const formData = new FormData();
+  formData.append("file", file);
+
+  try {
+    const res = await fetch("/api/jobs/bulk-upload", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`
+      },
+      body: formData
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      statusEl.textContent = data.error || "Bulk upload failed.";
+      return;
+    }
+
+    statusEl.textContent = `Upload complete. Total rows: ${data.total_rows}, success: ${data.success_count}, failed: ${data.failed_count}.`;
+
+    let html = `
+      <div class="mt-1">
+        <div><strong>Total rows:</strong> ${data.total_rows}</div>
+        <div><strong>Success:</strong> ${data.success_count}</div>
+        <div><strong>Failed:</strong> ${data.failed_count}</div>
+      </div>
+    `;
+
+    if (Array.isArray(data.failed_rows) && data.failed_rows.length > 0) {
+      html += `
+        <div class="mt-3">
+          <div class="font-semibold mb-1">Failed rows</div>
+          <div class="max-h-40 overflow-auto border border-gray-200 rounded-md">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-gray-50 text-gray-600">
+                <tr>
+                  <th class="p-2 border-b">Row</th>
+                  <th class="p-2 border-b">Error</th>
+                </tr>
+              </thead>
+              <tbody>
+      `;
+      data.failed_rows.forEach(r => {
+        html += `
+          <tr class="border-t">
+            <td class="p-2 align-top">${r.row_number}</td>
+            <td class="p-2 text-red-600">${r.error}</td>
+          </tr>
+        `;
+      });
+      html += `
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+
+    resultEl.innerHTML = html;
+
+    // refresh stats and jobs to reflect new sends
+    loadStats();
+    loadJobs();
+  } catch (err) {
+    console.error("Bulk upload error:", err);
+    statusEl.textContent = "Bulk upload failed.";
+  } finally {
+    spinner.classList.add("hidden");
+  }
+}
+
 /* Load Upcoming Expiries */
 async function loadExpiries() {
   try {
@@ -202,6 +329,10 @@ async function loadExpiries() {
 loadStats();
 loadJobs();
 loadExpiries();
+
+document
+  .getElementById("jobsCsvUploadBtn")
+  .addEventListener("click", bulkUploadJobs);
 </script>
 
 </body>

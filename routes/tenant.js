@@ -1,8 +1,11 @@
 const express = require("express");
 const router = express.Router();
+const multer = require("multer");
 const authTenant = require("../middleware/authTenant");
 const tenantService = require("../services/tenantService");
 const paymentService = require("../services/paymentService");
+
+const upload = multer({ dest: "uploads/" });
 
 /* ============================
    TENANT STATS
@@ -83,5 +86,30 @@ router.post("/tenant/purchase", authTenant, async (req, res) => {
     res.status(500).json({ error: "Purchase request failed" });
   }
 });
+
+/* ============================
+   BULK JOB UPLOAD (CSV)
+============================ */
+router.post(
+  "/jobs/bulk-upload",
+  authTenant,
+  upload.single("file"),
+  async (req, res) => {
+    if (!req.file) {
+      return res.status(400).json({ error: "CSV file required" });
+    }
+
+    try {
+      const summary = await tenantService.bulkUploadJobsFromCsv(
+        req.user.id,
+        req.file.path
+      );
+      res.json(summary);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Bulk upload failed" });
+    }
+  }
+);
 
 module.exports = router;

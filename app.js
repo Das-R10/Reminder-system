@@ -161,7 +161,9 @@ async function start() {
       const tenants = await pool.query("SELECT COUNT(*) FROM tenants WHERE role='user'");
       const jobs = await pool.query("SELECT COUNT(*) FROM jobs");
       const sent = await pool.query("SELECT COUNT(*) FROM jobs WHERE status='sent'");
-      const failed = await pool.query("SELECT COUNT(*) FROM jobs WHERE status='failed'");
+      const failed = await pool.query(
+        "SELECT COUNT(*) FROM jobs WHERE status IN ('failed','permanent_failed')"
+      );
 
       res.json({
         total_tenants: tenants.rows[0].count,

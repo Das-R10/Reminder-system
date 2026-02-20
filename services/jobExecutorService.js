@@ -1,5 +1,7 @@
-const { getPendingJobs, markJobSent, markJobFailed } = require('../db');
+const { getPendingJobs, markJobSent, markJobFailed, rescheduleJob } = require('../db');
 const { sendNotification } = require('./notificationService');
+
+const MAX_RETRIES = 3;
 
 async function runJobExecutor() {
   try {
@@ -14,8 +16,20 @@ async function runJobExecutor() {
         await markJobSent(job.id, providerMsgId);
         console.log(`✅ Job ${job.id} sent (provider id: ${providerMsgId})`);
       } catch (err) {
-        console.error(`❌ Job ${job.id} failed:`, err.message);
-        await markJobFailed(job.id, err.message);
+        const currentRetries = job.retry_count || 0;
+        console.error(`❌ Job ${job.id} failed (retry ${currentRetries}):`, err.message);
+
+        if (currentRetries < MAX_RETRIES) {
+          const nextRetryCount = currentRetries + 1;
+          const delayMinutes = Math.pow(2, nextRetryCount); // 2^retry_count minutes
+          await rescheduleJob(job.id, delayMinutes, err.message);
+          console.log(
+            `🔁 Job ${job.id} rescheduled in ${delayMinutes} minute(s), retry_count=${nextRetryCount}`
+          );
+        } else {
+          await markJobFailed(job.id, err.message);
+          console.log(`🛑 Job ${job.id} marked as permanent_failed after ${currentRetries} retries`);
+        }
       }
     }
   } catch (err) {
