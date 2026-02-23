@@ -1,6 +1,7 @@
 // db.js
 require('dotenv').config();
 const { Pool } = require('pg');
+console.log("Loaded DATABASE_URL:", process.env.DATABASE_URL);
 
 
 const connectionString = process.env.DATABASE_URL;
