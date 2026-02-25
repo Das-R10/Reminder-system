@@ -1,339 +1,343 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Expiry Notifier — Tenant</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    :root {
-      --brand: #0b3d91;
-      --accent: #F4A300;
-    }
-    body { background: #f7fafc; color: #0b1726; }
-    .card { background: white; border-radius: 10px; box-shadow: 0 6px 18px rgba(15,23,42,0.06); }
-  </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>RenewPulse — Billing &amp; Usage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#0a0b0f;
+  --surface:#13141a;
+  --surface2:#1c1e27;
+  --border:#252733;
+  --brand:#f5a623;
+  --green:#22c55e;
+  --red:#ef4444;
+  --blue:#3b82f6;
+  --whatsapp:#25d366;
+  --text:#f0f0f0;
+  --muted:#8a8fa8;
+  --radius:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden}
+h1,h2,h3{font-family:'Syne',sans-serif}
+
+.topbar{
+  position:sticky;top:0;z-index:50;
+  background:rgba(10,11,15,0.9);backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);
+  padding:0 2rem;height:64px;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:1rem;
+}
+.logo{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.logo .dot{width:9px;height:9px;background:var(--brand);border-radius:50%;flex-shrink:0}
+.topbar-right{display:flex;align-items:center;gap:0.75rem;min-width:0}
+.nav-link{color:var(--muted);text-decoration:none;font-size:0.88rem;padding:6px 12px;border-radius:8px;transition:all 0.2s;white-space:nowrap}
+.nav-link:hover{background:var(--surface2);color:var(--text)}
+.company-chip{background:var(--surface2);border:1px solid var(--border);padding:5px 12px;border-radius:20px;font-size:0.82rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px}
+.logout-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:8px;cursor:pointer;font-size:0.85rem;transition:all 0.2s;white-space:nowrap;flex-shrink:0}
+.logout-btn:hover{border-color:var(--red);color:var(--red)}
+
+.main{max-width:1100px;margin:0 auto;padding:2rem}
+
+/* Channel usage section */
+.ch-usage-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.2rem;margin-bottom:2rem}
+.ch-usage-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;
+}
+.ch-usage-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem}
+.ch-icon-label{display:flex;align-items:center;gap:10px;font-family:'Syne',sans-serif;font-weight:700;font-size:1.05rem}
+.ch-icon{font-size:1.4rem;flex-shrink:0}
+.ch-status-pill{font-size:0.72rem;padding:3px 10px;border-radius:20px;font-weight:700;white-space:nowrap}
+.ch-status-pill.active{background:rgba(34,197,94,0.15);color:var(--green)}
+.ch-status-pill.inactive{background:rgba(138,143,168,0.1);color:var(--muted)}
+
+.ch-bar-label{display:flex;justify-content:space-between;font-size:0.82rem;margin-bottom:6px}
+.ch-bar-label .used{font-weight:600}
+.ch-bar-label .quota{color:var(--muted)}
+.bar-track{height:8px;background:var(--surface2);border-radius:99px;overflow:hidden}
+.bar-fill{height:100%;border-radius:99px;transition:width 0.7s cubic-bezier(.4,0,.2,1)}
+.ch-remaining{font-size:0.78rem;color:var(--muted);margin-top:8px}
+
+.add-channel-btn{
+  width:100%;margin-top:1rem;padding:9px;border-radius:8px;
+  background:transparent;border:1.5px dashed var(--border);
+  color:var(--muted);font-size:0.85rem;cursor:pointer;transition:all 0.2s;
+  font-family:'DM Sans',sans-serif;
+}
+.add-channel-btn:hover{border-color:var(--brand);color:var(--brand)}
+
+/* Plans section */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin-bottom:1.5rem}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;flex-wrap:wrap;gap:0.5rem}
+.card-title{font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:700}
+.inline-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;font-size:0.85rem;cursor:pointer;border:none;transition:all 0.2s;font-family:'DM Sans',sans-serif;white-space:nowrap}
+.inline-btn.primary{background:var(--brand);color:#000;font-weight:600}
+.inline-btn.secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.inline-btn:hover{opacity:0.85}
+
+/* Table */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:0.88rem}
+thead tr{background:var(--surface2)}
+th{padding:10px 14px;text-align:left;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);font-weight:600;white-space:nowrap}
+td{padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:rgba(255,255,255,0.02)}
+
+.status-pill{display:inline-block;padding:3px 10px;border-radius:20px;font-size:0.75rem;font-weight:600;white-space:nowrap}
+.status-pill.approved,.status-pill.active{background:rgba(34,197,94,0.15);color:var(--green)}
+.status-pill.pending{background:rgba(245,166,35,0.15);color:var(--brand)}
+.status-pill.rejected{background:rgba(239,68,68,0.15);color:var(--red)}
+
+/* Empty */
+.empty{text-align:center;padding:2.5rem;color:var(--muted)}
+.empty .big-icon{font-size:2.5rem;margin-bottom:1rem}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.fade-in{animation:fadeIn 0.35s ease}
+
+/* CSV upload section */
+.upload-zone{border:2px dashed var(--border);border-radius:var(--radius);padding:1.5rem;text-align:center;cursor:pointer;transition:border-color 0.2s;margin-bottom:1rem}
+.upload-zone:hover{border-color:var(--brand)}
+.upload-zone input{display:none}
+.upload-zone .zone-icon{font-size:1.8rem;margin-bottom:0.5rem}
+.upload-zone p{color:var(--muted);font-size:0.88rem;line-height:1.5}
+.file-name{color:var(--brand);font-size:0.82rem;margin-top:4px}
+.alert{padding:0.7rem 1rem;border-radius:var(--radius);font-size:0.85rem;margin-top:0.8rem;display:none;line-height:1.4}
+.alert.show{display:block}
+.alert.success{background:rgba(34,197,94,0.1);color:#86efac;border:1px solid rgba(34,197,94,0.2)}
+.alert.error{background:rgba(239,68,68,0.1);color:#ef9999;border:1px solid rgba(239,68,68,0.2)}
+
+@media(max-width:600px){
+  .main{padding:1rem}
+  .topbar{padding:0 1rem}
+  .ch-usage-grid{grid-template-columns:1fr}
+}
+</style>
 </head>
+<body>
 
-<body class="min-h-screen antialiased">
+<nav class="topbar">
+  <div class="logo"><span class="dot"></span> RenewPulse</div>
+  <div class="topbar-right">
+    <a href="/index.html" class="nav-link">Dashboard</a>
+    <a href="/home.html#pricing" class="nav-link">Pricing</a>
+    <span class="company-chip" id="companyChip"></span>
+    <button class="logout-btn" onclick="doLogout()">Logout</button>
+  </div>
+</nav>
 
-<header class="border-b border-gray-200">
-  <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-    <div class="flex items-center gap-3">
-      <div class="rounded-md p-2 bg-white/60">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-          <path d="M3 12h18" stroke="var(--brand)" stroke-width="1.5" stroke-linecap="round"/>
-          <path d="M6 6h12" stroke="var(--brand)" stroke-width="1.5" stroke-linecap="round"/>
-          <path d="M6 18h8" stroke="var(--brand)" stroke-width="1.5" stroke-linecap="round"/>
-        </svg>
-      </div>
-      <div>
-        <h1 class="text-lg font-semibold" style="color:var(--brand)">Tenant Dashboard</h1>
-        <p class="text-xs text-gray-500">Usage · Expiries · Billing</p>
-      </div>
+<div class="main fade-in">
+
+  <!-- Channel usage -->
+  <div style="margin-bottom:2rem">
+    <h2 style="font-size:1.4rem;margin-bottom:0.4rem">Billing &amp; Usage</h2>
+    <p style="color:var(--muted);font-size:0.9rem">Current month usage across your active channels</p>
+  </div>
+
+  <div class="ch-usage-grid" id="chUsageGrid">
+    <div style="color:var(--muted);padding:1rem">Loading...</div>
+  </div>
+
+  <!-- Purchase history -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Purchase History</div>
+      <a href="/home.html#pricing" class="inline-btn primary">+ Add Channel</a>
     </div>
-
-    <div class="flex items-center gap-4">
-      <div id="companyName" class="text-sm text-gray-700"></div>
-      <button id="logoutBtn" class="text-sm border border-gray-200 px-3 py-1 rounded hover:bg-gray-50">Logout</button>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Plan</th><th>Amount</th><th>Method</th><th>Status</th><th>Date</th></tr></thead>
+        <tbody id="purchaseTable"><tr><td colspan="5" style="text-align:center;color:var(--muted);padding:2rem">Loading...</td></tr></tbody>
+      </table>
     </div>
   </div>
-</header>
 
-<main class="max-w-6xl mx-auto px-6 py-8 space-y-8">
-
-  <!-- STATS -->
-  <section class="grid grid-cols-1 md:grid-cols-4 gap-4">
-    <div class="card p-4">
-      <div class="flex items-start justify-between">
-        <div>
-          <p class="text-sm text-gray-500">Plan</p>
-          <p id="plan" class="text-xl font-bold">—</p>
-        </div>
-        <button id="openUpgradeBtn" class="bg-yellow-400 text-black px-3 py-1 rounded text-sm">
-          Upgrade
-        </button>
-      </div>
+  <!-- Upcoming expiries -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Upcoming Expiries (Next 30 Days)</div>
+      <button class="inline-btn secondary" onclick="loadExpiries()">↻ Refresh</button>
     </div>
-
-    <div class="card p-4">
-      <p class="text-sm text-gray-500">Reminders Used</p>
-      <p id="used" class="text-xl font-bold text-yellow-500">0</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Member Name</th><th>Expiry Date</th><th>Days Left</th></tr></thead>
+        <tbody id="expiryTable"><tr><td colspan="3" style="text-align:center;color:var(--muted);padding:2rem">Loading...</td></tr></tbody>
+      </table>
     </div>
+  </div>
 
-    <div class="card p-4">
-      <p class="text-sm text-gray-500">Limit</p>
-      <p id="limit" class="text-xl font-bold">0</p>
+  <!-- Recent jobs -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Recent Messages</div>
+      <button class="inline-btn secondary" onclick="loadJobs()">↻ Refresh</button>
     </div>
-
-    <div class="card p-4">
-      <p class="text-sm text-gray-500">Failed</p>
-      <p id="failed" class="text-xl font-bold text-red-500">0</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Channel</th><th>Recipient</th><th>Status</th><th>Time</th></tr></thead>
+        <tbody id="jobsTable"><tr><td colspan="4" style="text-align:center;color:var(--muted);padding:2rem">Loading...</td></tr></tbody>
+      </table>
     </div>
-  </section>
+  </div>
 
-  <!-- UPCOMING EXPIRIES -->
-  <section class="card p-6">
-    <h2 class="text-lg font-semibold mb-4" style="color:var(--brand)">
-      Upcoming Expiries (Next 30 Days)
-    </h2>
-
-    <table class="w-full text-sm">
-      <thead class="text-left text-gray-600">
-        <tr>
-          <th class="p-2">Customer</th>
-          <th class="p-2">Expiry Date</th>
-          <th class="p-2">Days Left</th>
-        </tr>
-      </thead>
-      <tbody id="expiryTable"></tbody>
-    </table>
-  </section>
-
-  <!-- RECENT REMINDERS -->
-  <section class="card p-6">
-    <h3 class="text-lg font-semibold mb-4" style="color:var(--brand)">
-      Recent Reminders
-    </h3>
-    <table class="w-full text-sm">
-      <thead class="text-left text-gray-600">
-        <tr>
-          <th class="p-2">Channel</th>
-          <th class="p-2">Customer</th>
-          <th class="p-2">Status</th>
-          <th class="p-2">Time</th>
-        </tr>
-      </thead>
-      <tbody id="jobsTable"></tbody>
-    </table>
-  </section>
-
-  <!-- CREATE REMINDERS (CSV) -->
-  <section class="card p-6">
-    <h3 class="text-lg font-semibold mb-4" style="color:var(--brand)">
-      Create Reminders (CSV Upload)
-    </h3>
-
-    <div class="flex flex-col md:flex-row md:items-center gap-4">
-      <input
-        id="jobsCsvFile"
-        type="file"
-        accept=".csv"
-        class="block w-full text-sm text-gray-700 file:bg-[var(--accent)] file:text-black file:px-4 file:py-2 file:border-none file:rounded-md cursor-pointer border border-dashed border-gray-300 rounded-md p-2 bg-white"
-      />
-
-      <button
-        id="jobsCsvUploadBtn"
-        class="inline-flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium text-white"
-        style="background:var(--brand)"
-      >
-        <span id="bulkUploadSpinner" class="hidden mr-2">
-          <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3.5-3.5L12 0v4a8 8 0 00-8 8h4z"></path>
-          </svg>
-        </span>
-        <span>Upload CSV</span>
-      </button>
+  <!-- Bulk CSV upload -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Bulk Send via CSV</div>
     </div>
-
-    <p class="mt-2 text-xs text-gray-500">
-      CSV must have columns: <code>channel</code>, <code>recipient</code>, <code>message</code>.
-      Channel must be <strong>email</strong> or <strong>sms</strong>.
+    <p style="font-size:0.85rem;color:var(--muted);margin-bottom:1rem">
+      CSV columns: <code>channel</code> (email/sms/whatsapp), <code>recipient</code>, <code>message</code>
     </p>
+    <div class="upload-zone" onclick="document.getElementById('bulkFile').click()">
+      <input type="file" id="bulkFile" accept=".csv" onchange="onBulkFileSelected(this)"/>
+      <div class="zone-icon">📤</div>
+      <p>Click to select CSV</p>
+      <div class="file-name" id="bulkFileName"></div>
+    </div>
+    <button class="inline-btn primary" onclick="bulkUpload()">⬆ Upload &amp; Send</button>
+    <div class="alert" id="bulkAlert"></div>
+    <div id="bulkResult" style="margin-top:1rem;font-size:0.85rem"></div>
+  </div>
 
-    <div id="bulkUploadStatus" class="mt-3 text-sm text-gray-600"></div>
-    <div id="bulkUploadResult" class="mt-3 text-xs text-gray-700"></div>
-  </section>
-
-</main>
+</div>
 
 <script>
-const token = localStorage.getItem("token");
-const companyName = localStorage.getItem("company_name") || "";
+const token = localStorage.getItem('token');
+const COMPANY = localStorage.getItem('company_name') || '';
 
-if (!token) location.href = "/";
+if (!token) { location.href = '/index.html'; }
+document.getElementById('companyChip').textContent = COMPANY;
 
-document.getElementById("companyName").innerText = companyName;
+function doLogout() {
+  localStorage.clear();
+  location.href = '/index.html';
+}
 
-document.getElementById("logoutBtn").addEventListener("click", () => {
-  localStorage.removeItem("token");
-  localStorage.removeItem("company_name");
-  location.href = "/";
-});
+const CH_META = {
+  email:    { icon:'📧', color:'#3b82f6',  label:'Email' },
+  sms:      { icon:'💬', color:'#f5a623',  label:'SMS' },
+  whatsapp: { icon:'💚', color:'#25d366',  label:'WhatsApp' }
+};
 
-document.getElementById("openUpgradeBtn").addEventListener("click", () => {
-  location.href = "/home.html#pricing";
-});
-
-/* Load Stats */
 async function loadStats() {
-  const res = await fetch("/api/tenant/stats", {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+  const res  = await fetch('/api/tenant/stats', { headers:{ Authorization:'Bearer ' + token } });
   const data = await res.json();
 
-  document.getElementById("plan").innerText = (data.plan || "-").toUpperCase();
-  document.getElementById("used").innerText = data.jobs_used ?? 0;
-  document.getElementById("limit").innerText = data.job_limit ?? 0;
-  document.getElementById("failed").innerText = data.failed_jobs ?? 0;
-}
+  const grid = document.getElementById('chUsageGrid');
 
-/* Load Recent Reminders */
-async function loadJobs() {
-  const res = await fetch("/api/jobs", {
-    headers: { Authorization: `Bearer ${token}` }
-  });
-
-  const jobs = await res.json();
-  const tbody = document.getElementById("jobsTable");
-  tbody.innerHTML = "";
-
-  jobs.slice(0,10).forEach(j => {
-    const tr = document.createElement("tr");
-    tr.className = "border-t";
-    tr.innerHTML = `
-      <td class="p-2">${(j.channel || "").toUpperCase()}</td>
-      <td class="p-2">${j.recipient || ""}</td>
-      <td class="p-2 ${j.status === "sent" ? "text-green-600" : "text-red-600"}">${j.status}</td>
-      <td class="p-2 text-gray-600">${new Date(j.created_at).toLocaleString()}</td>
-    `;
-    tbody.appendChild(tr);
-  });
-}
-
-/* Bulk CSV upload */
-async function bulkUploadJobs() {
-  const fileInput = document.getElementById("jobsCsvFile");
-  const file = fileInput.files[0];
-  const statusEl = document.getElementById("bulkUploadStatus");
-  const resultEl = document.getElementById("bulkUploadResult");
-  const spinner = document.getElementById("bulkUploadSpinner");
-
-  if (!file) {
-    statusEl.textContent = "Please select a CSV file.";
+  if (!data.channel_stats?.length) {
+    grid.innerHTML = '<div class="empty"><div class="big-icon">📊</div>No channels active yet.</div>';
     return;
   }
 
-  statusEl.textContent = "";
-  resultEl.innerHTML = "";
-  spinner.classList.remove("hidden");
+  grid.innerHTML = data.channel_stats.map(ch => {
+    const meta  = CH_META[ch.channel] || { icon:'📡', color:'#888', label:ch.channel };
+    const pct   = ch.quota > 0 ? Math.min(100, (ch.used / ch.quota) * 100) : 0;
+    const barColor = pct > 85 ? '#ef4444' : pct > 60 ? '#f5a623' : meta.color;
+
+    return '<div class="ch-usage-card"><div class="ch-usage-header"><div class="ch-icon-label"><span class="ch-icon">' + meta.icon + '</span>' + meta.label + '</div><span class="ch-status-pill ' + (ch.enabled ? 'active' : 'inactive') + '">' + (ch.enabled ? '● Active' : '○ Inactive') + '</span></div>' + (ch.enabled ? '<div class="ch-bar-label"><span class="used">' + ch.used.toLocaleString() + ' sent</span><span class="quota">of ' + ch.quota.toLocaleString() + '</span></div><div class="bar-track"><div class="bar-fill" style="width:' + pct + '%;background:' + barColor + '"></div></div><div class="ch-remaining">' + ch.remaining.toLocaleString() + ' remaining this month</div>' + (pct > 80 ? '<div style="font-size:0.78rem;color:#f5a623;margin-top:6px">⚠ Running low — <a href="/home.html#pricing" style="color:inherit">upgrade</a></div>' : '') : '<div style="color:var(--muted);font-size:0.85rem;margin-bottom:0.8rem">Not in your plan</div><button class="add-channel-btn" onclick="location.href=\'/home.html#pricing\'">+ Add ' + meta.label + '</button>') + '</div>';
+  }).join('');
+}
+
+async function loadPurchaseHistory() {
+  const res  = await fetch('/api/tenant/purchase-history', { headers:{ Authorization:'Bearer ' + token } });
+  const data = await res.json();
+  const tbody = document.getElementById('purchaseTable');
+
+  if (!Array.isArray(data) || !data.length) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:2rem">No purchases yet. <a href="/home.html#pricing" style="color:var(--brand)">Choose a plan →</a></td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = data.map(p => '<tr><td style="font-weight:600">' + p.plan_id + '</td><td>₹' + (p.amount/100).toLocaleString('en-IN') + '</td><td style="text-transform:capitalize">' + p.payment_method + '</td><td><span class="status-pill ' + p.status + '">' + p.status + '</span></td><td style="color:var(--muted);font-size:0.82rem">' + new Date(p.created_at).toLocaleDateString('en-IN') + '</td></tr>').join('');
+}
+
+async function loadExpiries() {
+  const res  = await fetch('/api/tenant/upcoming-expiries', { headers:{ Authorization:'Bearer ' + token } });
+  const data = await res.json();
+  const tbody = document.getElementById('expiryTable');
+
+  if (!Array.isArray(data) || !data.length) {
+    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:2rem">No upcoming expiries</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = data.map(c => {
+    const d = c.days_left;
+    const color = d <= 3 ? 'var(--red)' : d <= 7 ? 'var(--brand)' : 'var(--green)';
+    return '<tr><td>' + (c.customer_name || '—') + '</td><td>' + new Date(c.expiry_date).toLocaleDateString('en-IN') + '</td><td style="color:' + color + ';font-weight:600">' + d + ' days</td></tr>';
+  }).join('');
+}
+
+async function loadJobs() {
+  const res  = await fetch('/api/jobs', { headers:{ Authorization:'Bearer ' + token } });
+  const data = await res.json();
+  const tbody = document.getElementById('jobsTable');
+  const CH_ICON = { email:'📧', sms:'💬', whatsapp:'💚' };
+
+  if (!Array.isArray(data) || !data.length) {
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:2rem">No messages yet</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = data.slice(0,20).map(j => '<tr><td>' + (CH_ICON[j.channel]||'') + ' ' + (j.channel||'').toUpperCase() + '</td><td style="font-size:0.82rem">' + (j.recipient||'—') + '</td><td><span class="status-pill ' + j.status + '">' + j.status + '</span></td><td style="color:var(--muted);font-size:0.82rem">' + new Date(j.created_at).toLocaleString('en-IN') + '</td></tr>').join('');
+}
+
+function onBulkFileSelected(input) {
+  const f = input.files[0];
+  document.getElementById('bulkFileName').textContent = f ? f.name : '';
+}
+
+async function bulkUpload() {
+  const file = document.getElementById('bulkFile').files[0];
+  const alertEl = document.getElementById('bulkAlert');
+  const resultEl = document.getElementById('bulkResult');
+
+  if (!file) {
+    alertEl.textContent = 'Select a CSV file first';
+    alertEl.className = 'alert error show';
+    return;
+  }
+
+  alertEl.className = 'alert show';
+  alertEl.style.background = 'rgba(59,130,246,0.1)';
+  alertEl.style.color = '#93c5fd';
+  alertEl.style.border = '1px solid rgba(59,130,246,0.2)';
+  alertEl.textContent = 'Uploading...';
 
   const formData = new FormData();
-  formData.append("file", file);
+  formData.append('file', file);
 
-  try {
-    const res = await fetch("/api/jobs/bulk-upload", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`
-      },
-      body: formData
-    });
+  const res  = await fetch('/api/jobs/bulk-upload', { method:'POST', headers:{ Authorization:'Bearer ' + token }, body:formData });
+  const data = await res.json();
 
-    const data = await res.json();
-
-    if (!res.ok) {
-      statusEl.textContent = data.error || "Bulk upload failed.";
-      return;
-    }
-
-    statusEl.textContent = `Upload complete. Total rows: ${data.total_rows}, success: ${data.success_count}, failed: ${data.failed_count}.`;
-
-    let html = `
-      <div class="mt-1">
-        <div><strong>Total rows:</strong> ${data.total_rows}</div>
-        <div><strong>Success:</strong> ${data.success_count}</div>
-        <div><strong>Failed:</strong> ${data.failed_count}</div>
-      </div>
-    `;
-
-    if (Array.isArray(data.failed_rows) && data.failed_rows.length > 0) {
-      html += `
-        <div class="mt-3">
-          <div class="font-semibold mb-1">Failed rows</div>
-          <div class="max-h-40 overflow-auto border border-gray-200 rounded-md">
-            <table class="w-full text-left text-xs">
-              <thead class="bg-gray-50 text-gray-600">
-                <tr>
-                  <th class="p-2 border-b">Row</th>
-                  <th class="p-2 border-b">Error</th>
-                </tr>
-              </thead>
-              <tbody>
-      `;
-      data.failed_rows.forEach(r => {
-        html += `
-          <tr class="border-t">
-            <td class="p-2 align-top">${r.row_number}</td>
-            <td class="p-2 text-red-600">${r.error}</td>
-          </tr>
-        `;
-      });
-      html += `
-              </tbody>
-            </table>
-          </div>
-        </div>
-      `;
-    }
-
-    resultEl.innerHTML = html;
-
-    // refresh stats and jobs to reflect new sends
-    loadStats();
-    loadJobs();
-  } catch (err) {
-    console.error("Bulk upload error:", err);
-    statusEl.textContent = "Bulk upload failed.";
-  } finally {
-    spinner.classList.add("hidden");
+  if (!res.ok) {
+    alertEl.textContent = data.error || 'Upload failed';
+    alertEl.className = 'alert error show';
+    return;
   }
-}
 
-/* Load Upcoming Expiries */
-async function loadExpiries() {
-  try {
-    const res = await fetch("/api/tenant/upcoming-expiries", {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+  alertEl.textContent = '✅ Upload complete: ' + data.success_count + ' sent, ' + data.failed_count + ' failed';
+  alertEl.className = 'alert success show';
 
-    if (!res.ok) {
-      console.error("Upcoming expiries failed:", await res.text());
-      return;
-    }
-
-    const customers = await res.json();
-    console.log("Upcoming expiries:", customers);
-
-    const tbody = document.getElementById("expiryTable");
-    tbody.innerHTML = "";
-
-    customers.forEach(c => {
-      const tr = document.createElement("tr");
-      tr.className = "border-t";
-      tr.innerHTML = `
-        <td class="p-2">${c.customer_name || c.first_name || ""}</td>
-        <td class="p-2">${new Date(c.expiry_date).toLocaleDateString()}</td>
-        <td class="p-2">${c.days_left} days</td>
-      `;
-      tbody.appendChild(tr);
-    });
-
-  } catch (err) {
-    console.error("Error loading expiries:", err);
+  if (data.failed_rows?.length) {
+    resultEl.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;margin-top:0.5rem">Failed rows: ' + data.failed_rows.map(r=>'Row ' + r.row_number + ': ' + r.error).join(' · ') + '</div>';
   }
-}
 
+  loadStats();
+  loadJobs();
+}
 
 loadStats();
-loadJobs();
+loadPurchaseHistory();
 loadExpiries();
-
-document
-  .getElementById("jobsCsvUploadBtn")
-  .addEventListener("click", bulkUploadJobs);
+loadJobs();
 </script>
-
 </body>
 </html>

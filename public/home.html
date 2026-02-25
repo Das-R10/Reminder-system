@@ -1,475 +1,656 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>Expiry Notifier — Home</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    /* small custom tweaks */
-    :root{
-      --brand:#0b3d91;   /* deep blue */
-      --accent:#F4A300;  /* saffron */
-      --muted:#6b7280;
-    }
-    body { background: #f7fafc; color: #0b1726; }
-    .card { background: white; box-shadow: 0 6px 18px rgba(15,23,42,0.06); border-radius: 12px; }
-    .pill { background: rgba(11,61,145,0.06); color: var(--brand); padding: 6px 10px; border-radius: 999px; font-weight:600; font-size:13px; }
-  </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>RenewPulse — Automated Subscription Reminders</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#f8f7f4;
+  --surface:#fff;
+  --brand:#f5a623;
+  --brand-dark:#d4891a;
+  --ink:#0a0b0f;
+  --muted:#5a5f73;
+  --border:#e5e3dd;
+  --green:#16a34a;
+  --blue:#1d4ed8;
+  --whatsapp:#25d366;
+  --radius:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;overflow-x:hidden}
+h1,h2,h3,h4{font-family:'Syne',sans-serif}
+
+/* NAV */
+nav{
+  position:sticky;top:0;z-index:50;
+  background:rgba(248,247,244,0.92);backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);
+  padding:0 5%;height:68px;display:flex;align-items:center;justify-content:space-between;
+}
+.nav-logo{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.nav-logo .dot{width:10px;height:10px;background:var(--brand);border-radius:50%;flex-shrink:0}
+.nav-links{display:flex;align-items:center;gap:2rem}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:0.9rem;transition:color 0.2s;white-space:nowrap}
+.nav-links a:hover{color:var(--ink)}
+.nav-cta{
+  background:var(--ink);color:#fff;
+  padding:9px 22px;border-radius:var(--radius);
+  font-size:0.88rem;font-weight:600;text-decoration:none;white-space:nowrap;
+  transition:opacity 0.2s;font-family:'Syne',sans-serif;
+}
+.nav-cta:hover{opacity:0.85}
+
+/* HERO */
+.hero-wrap{max-width:1100px;margin:0 auto;padding:0 5%}
+.hero{
+  padding:6rem 0 4rem;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  gap:3rem;
+  align-items:center;
+}
+.hero-eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  background:#fff;border:1px solid var(--border);
+  padding:6px 14px;border-radius:99px;font-size:0.82rem;
+  color:var(--muted);margin-bottom:1.5rem;
+}
+.hero-eyebrow .ping{width:8px;height:8px;background:var(--green);border-radius:50%;flex-shrink:0;animation:ping 1.5s infinite}
+@keyframes ping{0%,100%{opacity:1}50%{opacity:0.3}}
+
+h1.hero-title{
+  font-size:clamp(2rem,3.5vw,3.2rem);
+  font-weight:800;
+  line-height:1.12;
+  letter-spacing:-1px;
+  margin-bottom:1.2rem;
+  word-break:break-word;
+}
+h1.hero-title span{color:var(--brand)}
+.hero-sub{
+  color:var(--muted);
+  font-size:clamp(0.9rem,1.2vw,1.05rem);
+  line-height:1.65;
+  margin-bottom:2rem;
+}
+.hero-btns{display:flex;gap:1rem;flex-wrap:wrap}
+.btn-hero-primary{
+  background:var(--brand);color:#000;font-family:'Syne',sans-serif;font-weight:700;
+  padding:13px 26px;border-radius:var(--radius);text-decoration:none;font-size:0.95rem;
+  transition:transform 0.15s,box-shadow 0.15s;white-space:nowrap;
+  box-shadow:0 4px 16px rgba(245,166,35,0.35);
+}
+.btn-hero-primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(245,166,35,0.45)}
+.btn-hero-secondary{
+  background:#fff;color:var(--ink);font-family:'Syne',sans-serif;font-weight:600;
+  padding:13px 26px;border-radius:var(--radius);text-decoration:none;font-size:0.95rem;
+  border:1.5px solid var(--border);transition:border-color 0.2s;white-space:nowrap;
+}
+.btn-hero-secondary:hover{border-color:var(--ink)}
+.hero-trust{margin-top:1.5rem;font-size:0.82rem;color:var(--muted)}
+.hero-trust strong{color:var(--ink)}
+
+/* Channel pill badges in hero */
+.channel-pills{display:flex;flex-wrap:wrap;gap:10px;margin-top:1.5rem}
+.ch-pill{
+  display:flex;align-items:center;gap:7px;padding:7px 14px;border-radius:99px;
+  font-size:0.85rem;font-weight:600;border:1.5px solid;white-space:nowrap;
+}
+.ch-pill.email{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe}
+.ch-pill.sms{background:#fffbeb;color:#92400e;border-color:#fde68a}
+.ch-pill.whatsapp{background:#f0fdf4;color:#166534;border-color:#bbf7d0}
+
+/* Phone mockup */
+.hero-visual{
+  position:relative;
+  background:var(--ink);border-radius:24px;padding:1.8rem;
+  box-shadow:0 32px 64px rgba(0,0,0,0.18);
+  min-width:0; /* prevent overflow */
+}
+.mock-header{font-family:'Syne',sans-serif;font-size:0.72rem;color:#666;margin-bottom:1.2rem;letter-spacing:0.06em;text-transform:uppercase}
+.mock-msg{
+  background:#1c1e27;border-radius:12px;padding:1rem 1.2rem;margin-bottom:0.8rem;
+  border-left:3px solid var(--brand);
+}
+.mock-msg.green{border-left-color:var(--whatsapp)}
+.mock-msg.blue{border-left-color:#3b82f6}
+.mock-tag{font-size:0.72rem;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:6px;font-weight:700}
+.mock-msg.green .mock-tag{color:var(--whatsapp)}
+.mock-msg .mock-tag{color:var(--brand)}
+.mock-msg.blue .mock-tag{color:#3b82f6}
+.mock-text{font-size:0.83rem;color:#c9ccd6;line-height:1.5}
+.mock-time{font-size:0.7rem;color:#555;margin-top:6px}
+
+/* SECTION wrappers */
+section{max-width:1100px;margin:0 auto;padding:4rem 5%}
+.section-label{font-size:0.78rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);font-weight:600;margin-bottom:1rem}
+.section-title{font-size:clamp(1.6rem,2.5vw,2.2rem);font-weight:800;line-height:1.2;letter-spacing:-0.5px;margin-bottom:1rem}
+.section-sub{color:var(--muted);font-size:1rem;line-height:1.6;max-width:560px}
+.divider{border:none;border-top:1px solid var(--border);margin:0}
+
+/* HOW IT WORKS */
+.steps-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.5rem;margin-top:2.5rem}
+.step-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem}
+.step-num{font-family:'Syne',sans-serif;font-size:2.2rem;font-weight:800;color:var(--brand);line-height:1;margin-bottom:0.8rem}
+.step-title{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;margin-bottom:0.5rem}
+.step-desc{color:var(--muted);font-size:0.88rem;line-height:1.55}
+
+/* PRICING */
+#pricing{padding:5rem 5%;max-width:1100px;margin:0 auto}
+.pricing-intro{text-align:center;margin-bottom:3rem}
+.pricing-note{background:#fffbeb;border:1px solid #fde68a;border-radius:var(--radius);padding:1rem 1.5rem;font-size:0.88rem;color:#92400e;margin-bottom:2.5rem;max-width:700px;margin-left:auto;margin-right:auto;text-align:center;line-height:1.5}
+
+.channel-section{margin-bottom:3rem}
+.ch-section-header{display:flex;align-items:center;gap:12px;margin-bottom:1.2rem}
+.ch-section-icon{font-size:1.8rem;flex-shrink:0}
+.ch-section-name{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:700}
+.ch-section-desc{color:var(--muted);font-size:0.88rem}
+
+.plan-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem}
+.plan-card{
+  background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);
+  padding:1.5rem;position:relative;transition:border-color 0.2s,box-shadow 0.2s;cursor:pointer;
+}
+.plan-card:hover{border-color:var(--brand);box-shadow:0 8px 24px rgba(245,166,35,0.12)}
+.plan-card.selected{border-color:var(--brand);box-shadow:0 0 0 3px rgba(245,166,35,0.15)}
+.plan-badge{
+  position:absolute;top:12px;right:12px;
+  font-size:0.7rem;padding:3px 10px;border-radius:20px;font-weight:700;
+}
+.plan-badge.popular{background:rgba(245,166,35,0.15);color:var(--brand-dark)}
+.plan-badge.best{background:rgba(22,197,94,0.12);color:var(--green)}
+.plan-badge.pro{background:rgba(29,78,216,0.1);color:var(--blue)}
+.plan-name{font-family:'Syne',sans-serif;font-size:0.9rem;font-weight:600;color:var(--muted);margin-bottom:4px}
+.plan-price{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;line-height:1;margin-bottom:4px}
+.plan-price span{font-size:0.9rem;font-weight:400;color:var(--muted)}
+.plan-quota{color:var(--muted);font-size:0.85rem;margin-bottom:1rem;line-height:1.4}
+.plan-buy-btn{
+  width:100%;padding:9px;border-radius:10px;border:none;cursor:pointer;
+  font-family:'Syne',sans-serif;font-weight:700;font-size:0.88rem;
+  background:var(--ink);color:#fff;transition:opacity 0.2s;
+}
+.plan-buy-btn:hover{opacity:0.8}
+
+/* COMBO SECTION */
+.combo-section{margin-bottom:3rem}
+.combo-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.5rem}
+.combo-card{
+  background:linear-gradient(135deg,#fffbeb,#fff);
+  border:1.5px solid #fde68a;border-radius:var(--radius);padding:1.8rem;
+  position:relative;transition:box-shadow 0.2s;cursor:pointer;
+}
+.combo-card:hover{box-shadow:0 8px 32px rgba(245,166,35,0.15)}
+.combo-card.best-value{background:linear-gradient(135deg,#f0fdf4,#fff);border-color:#bbf7d0}
+
+/* UPGRADE MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;display:none;align-items:center;justify-content:center;padding:1rem}
+.modal-overlay.open{display:flex}
+.modal{
+  background:var(--surface);border-radius:20px;padding:2rem;
+  width:100%;max-width:460px;max-height:90vh;overflow-y:auto;
+  box-shadow:0 32px 64px rgba(0,0,0,0.2);
+}
+.modal h3{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;margin-bottom:1.2rem}
+.modal-field{margin-bottom:1rem}
+.modal-field label{display:block;font-size:0.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px}
+.modal-field select,.modal-field input{
+  width:100%;padding:0.7rem 1rem;background:var(--bg);
+  border:1.5px solid var(--border);border-radius:10px;
+  color:var(--ink);font-size:0.9rem;font-family:'DM Sans',sans-serif;
+}
+.modal-field select:focus,.modal-field input:focus{outline:none;border-color:var(--brand)}
+
+.upi-box{
+  background:var(--ink);color:#fff;border-radius:16px;padding:1.5rem;
+  text-align:center;margin-top:1rem;display:none;
+}
+.upi-id{font-family:monospace;color:var(--brand);font-size:1.1rem;margin:0.5rem 0}
+.upi-actions{display:flex;gap:0.8rem;justify-content:center;margin-top:1rem;flex-wrap:wrap}
+.upi-btn{
+  padding:9px 20px;border-radius:10px;border:none;cursor:pointer;font-size:0.88rem;
+  font-family:'Syne',sans-serif;font-weight:700;
+}
+.modal-actions{display:flex;gap:0.8rem;margin-top:1.5rem}
+.modal-btn-primary{flex:1;padding:12px;background:var(--brand);color:#000;border:none;border-radius:10px;font-family:'Syne',sans-serif;font-weight:700;cursor:pointer;font-size:0.95rem}
+.modal-btn-cancel{flex:1;padding:12px;background:var(--bg);color:var(--muted);border:1.5px solid var(--border);border-radius:10px;cursor:pointer;font-size:0.9rem;font-family:'DM Sans',sans-serif}
+
+/* FAQ */
+.faq-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem;margin-top:2rem}
+.faq-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem}
+.faq-q{font-family:'Syne',sans-serif;font-weight:700;margin-bottom:0.5rem}
+.faq-a{color:var(--muted);font-size:0.9rem;line-height:1.6}
+
+/* FOOTER */
+footer{
+  background:var(--ink);color:#fff;
+  padding:2.5rem 5%;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:1rem;
+}
+.footer-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1rem}
+.footer-links{display:flex;gap:1.5rem;flex-wrap:wrap}
+.footer-links a{color:#888;text-decoration:none;font-size:0.85rem;transition:color 0.2s}
+.footer-links a:hover{color:#fff}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .hero{
+    grid-template-columns:1fr;
+    padding:3rem 0;
+    gap:2rem;
+  }
+  h1.hero-title{font-size:2.2rem}
+  .hero-visual{display:none}
+  .nav-links{display:none}
+  footer{flex-direction:column;align-items:flex-start}
+}
+@media(max-width:480px){
+  h1.hero-title{font-size:1.9rem;letter-spacing:-0.5px}
+  .btn-hero-primary,.btn-hero-secondary{width:100%;text-align:center}
+  .hero-btns{flex-direction:column}
+}
+</style>
 </head>
-<body class="min-h-screen antialiased">
+<body>
 
-  <!-- Top nav -->
-  <header class="bg-white border-b border-gray-200">
-    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-      <div class="flex items-center gap-4">
-        <div class="rounded-md p-2" style="background: linear-gradient(180deg,#eef6ff,white)">
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" aria-hidden>
-            <path d="M3 12h18" stroke="var(--brand)" stroke-width="1.5" stroke-linecap="round"/>
-            <path d="M6 6h12" stroke="var(--brand)" stroke-width="1.5" stroke-linecap="round"/>
-            <path d="M6 18h8" stroke="var(--brand)" stroke-width="1.5" stroke-linecap="round"/>
-          </svg>
-        </div>
-        <div>
-          <h1 class="text-lg font-semibold" style="color:var(--brand)">Expiry Notifier</h1>
-          <p class="text-xs text-gray-500">Automated reminders that actually get results</p>
-        </div>
+<nav>
+  <div class="nav-logo"><span class="dot"></span> RenewPulse</div>
+  <div class="nav-links">
+    <a href="#how">How it works</a>
+    <a href="#pricing">Pricing</a>
+    <a href="/tenant.html">My Account</a>
+  </div>
+  <a href="/index.html" class="nav-cta">Get Started →</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero-wrap">
+  <div class="hero">
+    <div>
+      <div class="hero-eyebrow">
+        <span class="ping"></span>
+        Trusted by gyms &amp; businesses across India
       </div>
-
-      <div class="flex items-center gap-4">
-        <div id="homeCompany" class="text-sm text-gray-700 hidden md:block"></div>
-        <a id="pricingLink" class="text-sm text-gray-700 hover:text-gray-900">Pricing</a>
-        <button id="signoutBtn" class="text-sm border border-gray-200 px-3 py-1 rounded hover:bg-gray-50">Logout</button>
+      <h1 class="hero-title">Never lose a member<br/>to <span>forgotten renewals</span></h1>
+      <p class="hero-sub">
+        RenewPulse automatically reminds your gym members, clients, and customers
+        before their subscription expires — via WhatsApp, SMS, or Email.
+        Zero churn. Zero manual work.
+      </p>
+      <div class="hero-btns">
+        <a href="/index.html" class="btn-hero-primary">Start Free Today →</a>
+        <a href="#pricing" class="btn-hero-secondary">View Pricing</a>
+      </div>
+      <div class="channel-pills">
+        <div class="ch-pill whatsapp">💚 WhatsApp</div>
+        <div class="ch-pill sms">💬 SMS</div>
+        <div class="ch-pill email">📧 Email</div>
+      </div>
+      <div class="hero-trust">
+        <strong>Free plan available</strong> · No credit card required · Setup in 5 minutes
       </div>
     </div>
-  </header>
 
-  <!-- Hero -->
-  <section class="max-w-6xl mx-auto px-6 py-12">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+    <!-- Mockup -->
+    <div class="hero-visual">
+      <div class="mock-header">📤 Live Messages Sent</div>
+      <div class="mock-msg green">
+        <div class="mock-tag">💚 WhatsApp</div>
+        <div class="mock-text">Hi Rahul! Your gym membership expires in 7 days (Mar 31). Renew now to avoid a gap in your fitness journey! 💪</div>
+        <div class="mock-time">Just now · Delivered ✓✓</div>
+      </div>
+      <div class="mock-msg">
+        <div class="mock-tag">💬 SMS</div>
+        <div class="mock-text">Hi Priya, your subscription at FitZone expires on 31-Mar-2025. Call 98765-43210 to renew today.</div>
+        <div class="mock-time">2 min ago · Delivered</div>
+      </div>
+      <div class="mock-msg blue">
+        <div class="mock-tag">📧 Email</div>
+        <div class="mock-text">Subject: Your membership expires in 30 days — Action required</div>
+        <div class="mock-time">Auto-scheduled · 94 similar sent</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider"/>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <div class="section-label">Simple Process</div>
+  <h2 class="section-title">Set it up once.<br/>Works forever.</h2>
+  <div class="steps-grid">
+    <div class="step-card">
+      <div class="step-num">01</div>
+      <div class="step-title">Upload your members</div>
+      <div class="step-desc">Import a CSV with customer names, phone/email, and expiry dates. That's it.</div>
+    </div>
+    <div class="step-card">
+      <div class="step-num">02</div>
+      <div class="step-title">Pick your channels</div>
+      <div class="step-desc">Choose WhatsApp, SMS, Email — or all three. Subscribe to only what you need.</div>
+    </div>
+    <div class="step-card">
+      <div class="step-num">03</div>
+      <div class="step-title">Set reminder timing</div>
+      <div class="step-desc">Remind 30 days before, 7 days before, and 1 day before — fully configurable.</div>
+    </div>
+    <div class="step-card">
+      <div class="step-num">04</div>
+      <div class="step-title">Sit back and collect renewals</div>
+      <div class="step-desc">Our system sends messages automatically and retries failed ones. You just watch your retention go up.</div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider"/>
+
+<!-- PRICING -->
+<section id="pricing">
+  <div class="pricing-intro">
+    <div class="section-label">Transparent Pricing</div>
+    <h2 class="section-title">Pay only for what you use</h2>
+    <p class="section-sub" style="margin:0.5rem auto 0">
+      No bundles forcing you to pay for channels you don't need.
+      Pick exactly what your business requires.
+    </p>
+  </div>
+
+  <div class="pricing-note">
+    💡 <strong>How it works:</strong> Each channel is a separate monthly add-on.
+    Start with WhatsApp + SMS — the most effective combo for Indian businesses.
+    Pay via UPI, bank transfer, or international wire. Plans activate within minutes of payment.
+  </div>
+
+  <!-- WhatsApp -->
+  <div class="channel-section">
+    <div class="ch-section-header">
+      <span class="ch-section-icon">💚</span>
       <div>
-        <p class="pill inline-block mb-4">Trusted by Indian SMBs</p>
-        <h2 class="text-3xl md:text-4xl font-bold leading-tight" style="color:var(--brand)">
-          Never miss an expiry. Reduce churn and recover revenue.
-        </h2>
-        <p class="mt-4 text-gray-600 max-w-xl">
-          Send automated reminders by Email & SMS, manage contacts, and track deliveries — all from a simple dashboard.
-          Plans priced for Indian businesses, with manual payment options (UPI / bank / international) so you can start today.
-        </p>
-
-        <div class="mt-6 flex gap-3 flex-wrap">
-          <a href="/index.html" class="px-5 py-3 rounded-md text-white font-semibold" style="background:var(--brand)">
-            Get Started — Create Reminders
-          </a>
-
-          <a href="/tenant.html" class="px-5 py-3 rounded-md border border-gray-200 text-gray-800 font-semibold bg-white shadow-sm">
-            View Usage & Billing
-          </a>
-        </div>
-
-        <ul class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-gray-600">
-          <li>✔ Simple setup — upload CSV or connect via API</li>
-          <li>✔ Delivery logs & retry for failed messages</li>
-          <li>✔ Pricing that scales with reminders</li>
-          <li>✔ Manual and later automated billing options</li>
-        </ul>
-      </div>
-
-      <div>
-        <!-- CTA pricing summary card -->
-        <div class="card p-6">
-          <div class="flex items-start justify-between">
-            <div>
-              <h3 class="text-xl font-semibold" style="color:var(--brand)">Starter</h3>
-              <p class="text-sm text-gray-500">Best for small teams</p>
-            </div>
-            <div class="text-right">
-              <div class="text-2xl font-bold">₹999</div>
-              <div class="text-xs text-gray-500">/month</div>
-            </div>
-          </div>
-
-          <div class="mt-4 border-t border-gray-100 pt-4">
-            <ul class="text-sm text-gray-700 space-y-2">
-              <li>• 2,000 <strong>reminders / month</strong></li>
-              <li>• Email + SMS channels</li>
-              <li>• 30 days of logs</li>
-              <li>• Email support</li>
-            </ul>
-
-            <div class="mt-4">
-              <button onclick="location.href='/tenant.html#upgrade?plan=starter'"
-                      class="w-full px-4 py-2 rounded-md text-white font-semibold" style="background:var(--accent)">
-                Upgrade to Starter
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Small trust / numbers -->
-        <div class="mt-4 grid grid-cols-3 gap-3">
-          <div class="card p-3 text-center">
-            <div class="text-xl font-bold" style="color:var(--brand)">1k+</div>
-            <div class="text-xs text-gray-500">Businesses</div>
-          </div>
-          <div class="card p-3 text-center">
-            <div class="text-xl font-bold" style="color:var(--brand)">99%</div>
-            <div class="text-xs text-gray-500">Deliverability</div>
-          </div>
-          <div class="card p-3 text-center">
-            <div class="text-xl font-bold" style="color:var(--brand)">₹999</div>
-            <div class="text-xs text-gray-500">Starter / month</div>
-          </div>
-        </div>
+        <div class="ch-section-name">WhatsApp Reminders</div>
+        <div class="ch-section-desc">via Gupshup · Highest open rates in India</div>
       </div>
     </div>
-  </section>
-
-  <!-- Pricing comparison -->
-  <section id="pricing" class="max-w-6xl mx-auto px-6 pb-12">
-    <h3 class="text-2xl font-bold mb-6" style="color:var(--brand)">Pricing plans (simple & predictable)</h3>
-
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <!-- Free -->
-      <div class="card p-6">
-        <div class="flex items-center justify-between">
-          <div>
-            <h4 class="font-semibold text-lg">Free</h4>
-            <p class="text-sm text-gray-500">Start for free</p>
-          </div>
-          <div class="text-right">
-            <div class="text-xl font-bold">₹0</div>
-            <div class="text-xs text-gray-400">/month</div>
-          </div>
-        </div>
-
-        <ul class="mt-4 text-sm text-gray-700 space-y-2">
-          <li>• 100 <strong>reminders / month</strong></li>
-          <li>• Email only</li>
-          <li>• 7 days logs</li>
-          <li>• Community support</li>
-        </ul>
-
-        <div class="mt-4">
-          <a href="/index.html" class="block text-center px-4 py-2 rounded-md font-medium border border-gray-200">Start free</a>
-        </div>
+    <div class="plan-cards">
+      <div class="plan-card" onclick="openModal('whatsapp_starter')">
+        <span class="plan-badge popular">Popular</span>
+        <div class="plan-name">WhatsApp Starter</div>
+        <div class="plan-price">₹799<span>/mo</span></div>
+        <div class="plan-quota">1,000 messages / month</div>
+        <button class="plan-buy-btn">Get Started</button>
       </div>
-
-      <!-- Starter -->
-      <div class="card p-6 border-2 border-indigo-100">
-        <div class="flex items-center justify-between">
-          <div>
-            <h4 class="font-semibold text-lg">Starter</h4>
-            <p class="text-sm text-gray-500">Popular with small businesses</p>
-          </div>
-          <div class="text-right">
-            <div class="text-xl font-bold">₹999</div>
-            <div class="text-xs text-gray-400">/month</div>
-          </div>
-        </div>
-
-        <ul class="mt-4 text-sm text-gray-700 space-y-2">
-          <li>• 2,000 <strong>reminders / month</strong></li>
-          <li>• Email + SMS</li>
-          <li>• 30 days logs & exports</li>
-          <li>• Email support</li>
-        </ul>
-
-        <div class="mt-4">
-          <button onclick="openUpgradeModal('starter')" class="w-full px-4 py-2 rounded-md text-white font-semibold" style="background:var(--accent)">
-            Upgrade to Starter
-          </button>
-        </div>
-      </div>
-
-      <!-- Business -->
-      <div class="card p-6">
-        <div class="flex items-center justify-between">
-          <div>
-            <h4 class="font-semibold text-lg">Business</h4>
-            <p class="text-sm text-gray-500">For fast-growing teams</p>
-          </div>
-          <div class="text-right">
-            <div class="text-xl font-bold">₹3,999</div>
-            <div class="text-xs text-gray-400">/month</div>
-          </div>
-        </div>
-
-        <ul class="mt-4 text-sm text-gray-700 space-y-2">
-          <li>• 10,000 <strong>reminders / month</strong></li>
-          <li>• Email + SMS + API access</li>
-          <li>• 1 year logs & CSV exports</li>
-          <li>• Priority support</li>
-        </ul>
-
-        <div class="mt-4">
-          <button onclick="openUpgradeModal('business')" class="w-full px-4 py-2 rounded-md text-white font-semibold" style="background:var(--brand)">
-            Upgrade to Business
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- simple comparison table -->
-    <div class="mt-8 card p-6">
-      <h4 class="font-semibold text-lg mb-4">Quick comparison</h4>
-      <div class="overflow-auto">
-        <table class="w-full text-sm">
-          <thead class="text-left text-gray-600">
-            <tr>
-              <th class="p-3">Feature</th>
-              <th class="p-3">Free</th>
-              <th class="p-3">Starter</th>
-              <th class="p-3">Business</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr class="border-t">
-              <td class="p-3">Reminders / month</td>
-              <td class="p-3">100</td>
-              <td class="p-3">2,000</td>
-              <td class="p-3">10,000</td>
-            </tr>
-            <tr class="border-t">
-              <td class="p-3">Channels</td>
-              <td class="p-3">Email</td>
-              <td class="p-3">Email, SMS</td>
-              <td class="p-3">Email, SMS, API</td>
-            </tr>
-            <tr class="border-t">
-              <td class="p-3">Logs retention</td>
-              <td class="p-3">7 days</td>
-              <td class="p-3">30 days</td>
-              <td class="p-3">1 year</td>
-            </tr>
-            <tr class="border-t">
-              <td class="p-3">Support</td>
-              <td class="p-3">Community</td>
-              <td class="p-3">Email</td>
-              <td class="p-3">Priority</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-  </section>
-
-  <!-- FAQ / contact -->
-  <section class="max-w-6xl mx-auto px-6 pb-16">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div class="card p-6">
-        <h4 class="font-semibold mb-3">Frequently asked</h4>
-        <div class="space-y-3 text-sm text-gray-700">
-          <div>
-            <strong>How do I pay?</strong>
-            <p class="text-gray-600 mt-1">We accept UPI, bank transfer and international options. After selecting a plan, you'll get payment instructions and we will enable the plan once payment is verified.</p>
-          </div>
-
-          <div>
-            <strong>Can I change my plan?</strong>
-            <p class="text-gray-600 mt-1">Yes — upgrade anytime from the dashboard. Downgrades are handled at billing cycle boundaries.</p>
-          </div>
-
-          <div>
-            <strong>Do you offer an enterprise plan?</strong>
-            <p class="text-gray-600 mt-1">Yes — contact <a href="mailto:support@example.com" class="text-indigo-600">support@example.com</a> for custom pricing and onboarding.</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="card p-6">
-        <h4 class="font-semibold mb-3">Contact & trust</h4>
-        <p class="text-sm text-gray-700">Questions? Reach us:</p>
-        <ul class="mt-3 text-sm text-gray-700 space-y-2">
-          <li>📧 <a href="mailto:support@example.com" class="text-indigo-600">support@example.com</a></li>
-          <li>📞 UPI / Bank details after purchase</li>
-          <li>🏢 Registered in India — invoices available</li>
-        </ul>
-
-        <div class="mt-6 text-sm text-gray-600">
-          <strong>Security:</strong> We use industry-standard encryption for stored credentials and TLS in production.
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Upgrade modal (reusable) -->
-  <div id="upgradeModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 overflow-y-auto p-4">
-    <div class="bg-white rounded-lg w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
-      <h3 class="text-lg font-semibold mb-3">Upgrade plan</h3>
-
-      <label class="text-sm text-gray-600">Choose plan</label>
-      <select id="modalPlan" class="w-full border rounded mt-2 mb-3 p-2">
-        <option value="starter">Starter — ₹999 / month</option>
-        <option value="business">Business — ₹3,999 / month</option>
-      </select>
-
-      <label class="text-sm text-gray-600">Payment method</label>
-      <select id="modalMethod" class="w-full border rounded mt-2 mb-3 p-2">
-        <option value="upi">UPI</option>
-        <option value="bank">Bank transfer</option>
-        <option value="international">International</option>
-      </select>
-
-      <div class="flex flex-col gap-4 mt-4">
-        <button id="modalProceed" class="flex-1 bg-indigo-700 text-white px-4 py-2 rounded">Proceed</button>
-          <div id="upiBox" class="hidden mt-6 transition-all duration-300 ease-in-out">
-
-            <div class="bg-gray-900 text-white rounded-xl p-4 md:p-6 text-center shadow-lg">
-
-              <p class="text-sm text-gray-300 mb-4">
-                Scan with any UPI app to pay
-              </p>
-
-              <div class="flex justify-center">
-                <img id="upiQR" class="w-44 h-44 md:w-52 md:h-52 bg-white p-2 rounded-xl shadow-md mx-auto" />
-              </div>
-
-              <p class="mt-4 text-sm text-gray-400">
-                UPI ID
-              </p>
-
-              <p class="font-mono text-yellow-400 text-lg mt-1">
-                9875580007@yml
-              </p>
-
-              <div class="flex gap-3 mt-5 justify-center">
-                <button id="openUpiBtn"
-                  class="bg-yellow-500 hover:bg-yellow-600 text-black px-5 py-2 rounded-lg font-semibold transition">
-                  Open UPI App
-                </button>
-
-                <button onclick="copyUpi()"
-                  class="border border-gray-600 hover:bg-gray-800 px-5 py-2 rounded-lg transition">
-                  Copy UPI ID
-                </button>
-              </div>
-
-              <p class="mt-4 text-xs text-gray-400">
-                After payment, your plan activates within minutes.
-              </p>
-
-            </div>
-
-          </div>
-
-
-        <button id="modalCancel" class="flex-1 border border-gray-300 px-4 py-2 rounded">Cancel</button>
+      <div class="plan-card" onclick="openModal('whatsapp_pro')">
+        <span class="plan-badge pro">Pro</span>
+        <div class="plan-name">WhatsApp Pro</div>
+        <div class="plan-price">₹2,499<span>/mo</span></div>
+        <div class="plan-quota">5,000 messages / month</div>
+        <button class="plan-buy-btn">Get Started</button>
       </div>
     </div>
   </div>
 
+  <!-- SMS -->
+  <div class="channel-section">
+    <div class="ch-section-header">
+      <span class="ch-section-icon">💬</span>
+      <div>
+        <div class="ch-section-name">SMS Reminders</div>
+        <div class="ch-section-desc">via MSG91 · Works on any phone, no app needed</div>
+      </div>
+    </div>
+    <div class="plan-cards">
+      <div class="plan-card" onclick="openModal('sms_starter')">
+        <span class="plan-badge popular">Popular</span>
+        <div class="plan-name">SMS Starter</div>
+        <div class="plan-price">₹599<span>/mo</span></div>
+        <div class="plan-quota">1,000 SMS / month</div>
+        <button class="plan-buy-btn">Get Started</button>
+      </div>
+      <div class="plan-card" onclick="openModal('sms_pro')">
+        <span class="plan-badge pro">Pro</span>
+        <div class="plan-name">SMS Pro</div>
+        <div class="plan-price">₹1,999<span>/mo</span></div>
+        <div class="plan-quota">5,000 SMS / month</div>
+        <button class="plan-buy-btn">Get Started</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Email -->
+  <div class="channel-section">
+    <div class="ch-section-header">
+      <span class="ch-section-icon">📧</span>
+      <div>
+        <div class="ch-section-name">Email Reminders</div>
+        <div class="ch-section-desc">via SendGrid · Best for detailed reminders</div>
+      </div>
+    </div>
+    <div class="plan-cards">
+      <div class="plan-card" onclick="openModal('email_free')">
+        <span class="plan-badge" style="background:#f0fdf4;color:var(--green)">Free</span>
+        <div class="plan-name">Email Free</div>
+        <div class="plan-price">₹0<span>/mo</span></div>
+        <div class="plan-quota">500 emails / month · forever free</div>
+        <button class="plan-buy-btn" style="background:var(--green)">Activate Free</button>
+      </div>
+      <div class="plan-card" onclick="openModal('email_starter')">
+        <span class="plan-badge popular">Popular</span>
+        <div class="plan-name">Email Starter</div>
+        <div class="plan-price">₹499<span>/mo</span></div>
+        <div class="plan-quota">5,000 emails / month</div>
+        <button class="plan-buy-btn">Get Started</button>
+      </div>
+      <div class="plan-card" onclick="openModal('email_pro')">
+        <span class="plan-badge pro">Pro</span>
+        <div class="plan-name">Email Pro</div>
+        <div class="plan-price">₹1,499<span>/mo</span></div>
+        <div class="plan-quota">25,000 emails / month</div>
+        <button class="plan-buy-btn">Get Started</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Combos -->
+  <div class="combo-section">
+    <h3 style="font-family:'Syne',sans-serif;font-size:1.1rem;margin-bottom:1rem">🎁 Bundle &amp; Save</h3>
+    <div class="combo-cards">
+      <div class="combo-card" onclick="openModal('combo_sms_whatsapp')">
+        <div style="font-size:1.3rem;margin-bottom:0.5rem">💬 + 💚</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.05rem;margin-bottom:4px">SMS + WhatsApp Bundle</div>
+        <div style="color:var(--muted);font-size:0.88rem;margin-bottom:1rem">1,000 SMS + 1,000 WhatsApp · Save ₹200</div>
+        <div style="font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800">₹1,199<span style="font-size:0.9rem;font-weight:400;color:var(--muted)">/mo</span></div>
+        <button class="plan-buy-btn" style="margin-top:1rem;width:100%">Get Bundle</button>
+      </div>
+      <div class="combo-card best-value" onclick="openModal('combo_all')">
+        <div style="position:absolute;top:12px;right:12px;background:#dcfce7;color:var(--green);font-size:0.72rem;padding:3px 10px;border-radius:20px;font-weight:700">Best Value</div>
+        <div style="font-size:1.3rem;margin-bottom:0.5rem">📧 + 💬 + 💚</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.05rem;margin-bottom:4px">All Channels Bundle</div>
+        <div style="color:var(--muted);font-size:0.88rem;margin-bottom:1rem">5,000 Email + 1,000 SMS + 1,000 WhatsApp</div>
+        <div style="font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800">₹2,499<span style="font-size:0.9rem;font-weight:400;color:var(--muted)">/mo</span></div>
+        <button class="plan-buy-btn" style="margin-top:1rem;width:100%;background:var(--green)">Get Bundle</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider"/>
+
+<!-- FAQ -->
+<section>
+  <div class="section-label">Questions</div>
+  <h2 class="section-title">FAQ</h2>
+  <div class="faq-grid">
+    <div class="faq-item">
+      <div class="faq-q">How do I pay?</div>
+      <div class="faq-a">UPI, bank transfer, or international wire. After you select a plan, you'll get exact payment details. Your plan activates within minutes of payment confirmation.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Can I mix channels?</div>
+      <div class="faq-a">Yes! You can subscribe to WhatsApp + SMS independently, or save with a bundle. Each channel is tracked separately.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">What happens when I hit my limit?</div>
+      <div class="faq-a">Messages for that channel stop sending. You'll see usage in your dashboard and can upgrade anytime.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Do you support WhatsApp templates?</div>
+      <div class="faq-a">Yes. For WhatsApp Business API (via Gupshup), your messages use pre-approved templates. We help you set these up.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Can I cancel anytime?</div>
+      <div class="faq-a">Yes. Plans are monthly. Don't renew and the plan won't activate next month.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Is there an API?</div>
+      <div class="faq-a">Yes — the All Channels Bundle includes API access to trigger reminders programmatically from your own software.</div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-logo">🔔 RenewPulse</div>
+  <div class="footer-links">
+    <a href="mailto:support@renewpulse.in">support@renewpulse.in</a>
+    <a href="/index.html">Dashboard</a>
+    <a href="#pricing">Pricing</a>
+  </div>
+  <div style="color:#555;font-size:0.82rem">© 2025 RenewPulse · Made in India 🇮🇳</div>
+</footer>
+
+<!-- UPGRADE MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal">
+    <h3>Upgrade Plan</h3>
+
+    <div class="modal-field">
+      <label>Selected Plan</label>
+      <input id="modalPlanDisplay" readonly style="background:#f5f5f5;cursor:default"/>
+      <input type="hidden" id="modalPlanId"/>
+    </div>
+
+    <div class="modal-field">
+      <label>Amount</label>
+      <input id="modalAmount" readonly style="background:#f5f5f5;cursor:default"/>
+    </div>
+
+    <div class="modal-field">
+      <label>Payment Method</label>
+      <select id="modalMethod" onchange="onMethodChange()">
+        <option value="upi">UPI</option>
+        <option value="bank">Bank Transfer</option>
+        <option value="international">International Wire</option>
+      </select>
+    </div>
+
+    <div class="modal-actions">
+      <button class="modal-btn-primary" onclick="proceedPayment()">Proceed</button>
+      <button class="modal-btn-cancel" onclick="closeModal()">Cancel</button>
+    </div>
+
+    <div class="upi-box" id="upiBox">
+      <p style="color:#aaa;font-size:0.85rem;margin-bottom:1rem">Scan with any UPI app</p>
+      <img id="upiQR" style="width:180px;height:180px;background:#fff;border-radius:12px;padding:8px"/>
+      <div style="color:#aaa;font-size:0.82rem;margin-top:1rem">UPI ID</div>
+      <div class="upi-id">9875580007@ybl</div>
+      <div class="upi-actions">
+        <button class="upi-btn" style="background:var(--brand);color:#000" id="openUpiBtn">Open UPI App</button>
+        <button class="upi-btn" style="background:#333;color:#fff" onclick="copyUpi()">Copy UPI ID</button>
+      </div>
+      <p style="font-size:0.78rem;color:#666;margin-top:1rem">Plan activates within minutes of payment verification.</p>
+    </div>
+
+    <div id="modalMsg" style="margin-top:1rem;font-size:0.85rem;display:none"></div>
+  </div>
+</div>
+
 <script>
-  // basic auth + UI wiring (same pattern you use elsewhere)
-  const TOKEN = localStorage.getItem('token');
-  const COMPANY_NAME = localStorage.getItem('company_name') || '';
+const TOKEN = localStorage.getItem('token');
+if (!TOKEN) {
+  document.querySelector('.nav-cta').textContent = 'Login / Sign Up →';
+}
 
-  // redirect to login if not logged
-  if (!TOKEN) location.href = '/';
+const PLAN_LABELS = {
+  email_free:            'Email Free — ₹0/mo',
+  email_starter:         'Email Starter — ₹499/mo',
+  email_pro:             'Email Pro — ₹1,499/mo',
+  sms_starter:           'SMS Starter — ₹599/mo',
+  sms_pro:               'SMS Pro — ₹1,999/mo',
+  whatsapp_starter:      'WhatsApp Starter — ₹799/mo',
+  whatsapp_pro:          'WhatsApp Pro — ₹2,499/mo',
+  combo_sms_whatsapp:    'SMS + WhatsApp Bundle — ₹1,199/mo',
+  combo_all:             'All Channels Bundle — ₹2,499/mo'
+};
 
-  // show company name
-  if (COMPANY_NAME) {
-    document.getElementById('homeCompany').innerText = COMPANY_NAME;
-    document.getElementById('homeCompany').classList.remove('hidden');
+const PLAN_PRICES = {
+  email_free:0, email_starter:499, email_pro:1499,
+  sms_starter:599, sms_pro:1999,
+  whatsapp_starter:799, whatsapp_pro:2499,
+  combo_sms_whatsapp:1199, combo_all:2499
+};
+
+function openModal(planId) {
+  if (!TOKEN) { location.href = '/index.html'; return; }
+  document.getElementById('modalPlanId').value      = planId;
+  document.getElementById('modalPlanDisplay').value = PLAN_LABELS[planId] || planId;
+  document.getElementById('modalAmount').value      = '₹' + (PLAN_PRICES[planId]||0).toLocaleString('en-IN');
+  document.getElementById('upiBox').style.display   = 'none';
+  document.getElementById('modalMsg').style.display = 'none';
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeModal(e) {
+  if (!e || e.target === document.getElementById('modalOverlay'))
+    document.getElementById('modalOverlay').classList.remove('open');
+}
+
+async function proceedPayment() {
+  if (!TOKEN) { location.href = '/index.html'; return; }
+  const planId = document.getElementById('modalPlanId').value;
+  const method = document.getElementById('modalMethod').value;
+  const amount = PLAN_PRICES[planId] || 0;
+
+  const res  = await fetch('/api/tenant/purchase', {
+    method:'POST',
+    headers:{'Content-Type':'application/json', Authorization:'Bearer ' + TOKEN},
+    body:JSON.stringify({plan_id:planId, payment_method:method})
+  });
+  const data = await res.json();
+
+  if (!res.ok) { showModalMsg(data.error || 'Failed', 'error'); return; }
+
+  if (method === 'upi') {
+    showUpi(planId, amount);
+  } else if (method === 'bank') {
+    showModalMsg('Bank Transfer: Account 0000000000, IFSC XXXX0000000, Name: RenewPulse. Send proof to support@renewpulse.in', 'info');
+  } else {
+    showModalMsg('Contact support@renewpulse.in for international payment instructions.', 'info');
   }
+}
 
-  document.getElementById('signoutBtn').addEventListener('click', () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('company_name');
-    location.href = '/';
-  });
+function showUpi(planId, amount) {
+  const upiId  = '9875580007@ybl';
+  const name   = 'RenewPulse';
+  const upiUrl = 'upi://pay?pa=' + upiId + '&pn=' + encodeURIComponent(name) + '&am=' + amount + '&cu=INR&tn=' + encodeURIComponent(planId + ' Plan');
+  document.getElementById('upiQR').src          = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' + encodeURIComponent(upiUrl);
+  document.getElementById('openUpiBtn').onclick = () => { window.location.href = upiUrl; };
+  document.getElementById('upiBox').style.display = 'block';
+}
 
-  // pricing quick link
-  document.getElementById('pricingLink').addEventListener('click', () => {
-    document.getElementById('pricing').scrollIntoView({ behavior: 'smooth', block: 'start' });
-  });
+function copyUpi() {
+  navigator.clipboard.writeText('9875580007@ybl');
+  alert('UPI ID copied!');
+}
 
-  // open modal from plan buttons
-  function openUpgradeModal(planKey = 'starter') {
-    document.getElementById('modalPlan').value = planKey;
-    document.getElementById('upgradeModal').classList.remove('hidden');
-  }
-
-  document.getElementById('modalCancel').addEventListener('click', () => {
-    document.getElementById('upgradeModal').classList.add('hidden');
-  });
-
-  // proceed (calls your purchase API)
-  document.getElementById('modalProceed').addEventListener('click', async () => {
-    const plan = document.getElementById('modalPlan').value;
-    const method = document.getElementById('modalMethod').value;
-
-    const planPrices = {
-      starter: 999,
-      business: 3999
-    };
-
-    const res = await fetch('/api/tenant/purchase', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${TOKEN}`
-      },
-      body: JSON.stringify({ plan, payment_method: method })
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      alert(data.error || 'Failed to request purchase');
-      return;
-    }
-
-    // 🔥 THIS IS THE IMPORTANT PART
-    if (method === 'upi') {
-      showUpiPayment(plan, planPrices[plan]);
-      return;
-    }
-
-    if (method === 'bank') {
-      alert('Bank transfer: Account: 0000000000, IFSC: XXXX0000000.');
-      return;
-    }
-
-    if (method === 'international') {
-      alert('Contact support@example.com for international payment.');
-      return;
-    }
-  });
-
-
-  function showUpiPayment(plan, amount) {
-    const upiId = "9875580007@ybl";
-    const merchant = "Mr Reyan Das";
-
-    const upiUrl =
-        `upi://pay?pa=${upiId}` +
-        `&pn=${encodeURIComponent(merchant)}` +
-        `&am=${amount}` +
-        `&cu=INR` +
-        `&tn=${encodeURIComponent(plan + " Plan")}`;
-
-    // QR generation (using Google chart API)
-    document.getElementById("upiQR").src =
-        `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(upiUrl)}`;
-
-    document.getElementById("openUpiBtn").onclick = () => {
-        window.location.href = upiUrl;
-    };
-
-    document.getElementById("upiBox").classList.remove("hidden");
-    }
-
-    function copyUpi() {
-    navigator.clipboard.writeText("9875580007@ybl");
-    alert("UPI ID copied");
-    }
-
-
-  // helpers allow quick call from CTA in hero card
-  window.openUpgradeModal = openUpgradeModal;
+function showModalMsg(msg, type) {
+  const el = document.getElementById('modalMsg');
+  el.textContent   = msg;
+  el.style.display = 'block';
+  el.style.color   = type === 'error' ? '#ef4444' : type === 'info' ? '#2563eb' : '#16a34a';
+}
 </script>
-
 </body>
 </html>

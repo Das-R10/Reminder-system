@@ -1,622 +1,706 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Expiry Notifier — Dashboard</title>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>RenewPulse — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg:#0a0b0f;
+  --surface:#13141a;
+  --surface2:#1c1e27;
+  --border:#252733;
+  --brand:#f5a623;
+  --brand2:#ff6b35;
+  --green:#22c55e;
+  --red:#ef4444;
+  --blue:#3b82f6;
+  --purple:#a855f7;
+  --text:#f0f0f0;
+  --muted:#8a8fa8;
+  --radius:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden}
+h1,h2,h3,h4{font-family:'Syne',sans-serif}
 
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            saffron: '#F4A300',
-            dark: '#0B0B0B'
-          }
-        }
-      }
-    }
-  </script>
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
+/* ── Login Screen ── */
+#loginScreen{
+  position:fixed;inset:0;z-index:100;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--bg);padding:1rem;
+}
+.login-box{
+  width:100%;max-width:420px;padding:2.5rem;
+  background:var(--surface);border:1px solid var(--border);border-radius:20px;
+  position:relative;overflow:hidden;
+}
+.login-box::before{
+  content:'';position:absolute;top:-80px;right:-80px;
+  width:200px;height:200px;border-radius:50%;
+  background:radial-gradient(circle,rgba(245,166,35,0.15),transparent 70%);
+  pointer-events:none;
+}
+.logo-mark{
+  display:flex;align-items:center;gap:10px;margin-bottom:1.5rem;
+}
+.logo-mark .icon{
+  width:40px;height:40px;background:var(--brand);border-radius:10px;
+  display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;
+}
+.logo-mark h1{font-size:1.4rem;font-weight:800;letter-spacing:-0.5px;line-height:1.2}
+.logo-mark span{color:var(--brand)}
 
+.input-group{margin-bottom:1rem}
+.input-group label{display:block;font-size:0.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px}
+.input-group input{
+  width:100%;padding:0.75rem 1rem;background:var(--surface2);
+  border:1px solid var(--border);border-radius:var(--radius);
+  color:var(--text);font-size:0.95rem;font-family:'DM Sans',sans-serif;
+  transition:border-color 0.2s;
+}
+.input-group input:focus{outline:none;border-color:var(--brand)}
 
-  <style>
-    /* small polish for inputs in dark theme */
-    input, textarea, select {
-      caret-color: #F4A300;
-    }
-    .fade {
-        transition: opacity 0.3s ease;
-        }
-  </style>
+.btn{
+  width:100%;padding:0.8rem;border:none;border-radius:var(--radius);
+  font-family:'Syne',sans-serif;font-weight:700;font-size:0.95rem;
+  cursor:pointer;transition:opacity 0.2s,transform 0.1s;
+}
+.btn:active{transform:scale(0.98)}
+.btn-primary{background:var(--brand);color:#000}
+.btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.btn:hover{opacity:0.9}
+.btn-row{display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;margin-bottom:1rem}
+
+#authMsg{font-size:0.85rem;margin-top:0.75rem;padding:0.6rem 0.8rem;border-radius:8px;display:none;line-height:1.4}
+#authMsg.error{background:rgba(239,68,68,0.1);color:#ef9999;border:1px solid rgba(239,68,68,0.2)}
+#authMsg.success{background:rgba(34,197,94,0.1);color:#86efac;border:1px solid rgba(34,197,94,0.2)}
+
+/* ── Dashboard ── */
+#dashboard{display:none;min-height:100vh}
+
+.topbar{
+  position:sticky;top:0;z-index:50;
+  background:rgba(10,11,15,0.85);backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);
+  padding:0 2rem;height:64px;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:1rem;
+}
+.topbar-logo{display:flex;align-items:center;gap:10px;font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;white-space:nowrap}
+.topbar-logo .dot{width:10px;height:10px;background:var(--brand);border-radius:50%;display:inline-block;margin-right:2px;flex-shrink:0}
+.topbar-right{display:flex;align-items:center;gap:0.75rem;min-width:0}
+.nav-link{color:var(--muted);text-decoration:none;font-size:0.88rem;padding:6px 12px;border-radius:8px;transition:all 0.2s;white-space:nowrap}
+.nav-link:hover,.nav-link.active{background:var(--surface2);color:var(--text)}
+.company-badge{background:var(--surface2);border:1px solid var(--border);padding:5px 12px;border-radius:20px;font-size:0.82rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px}
+.logout-btn{background:transparent;border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:8px;cursor:pointer;font-size:0.85rem;transition:all 0.2s;white-space:nowrap;flex-shrink:0}
+.logout-btn:hover{border-color:var(--red);color:var(--red)}
+
+.main{max-width:1200px;margin:0 auto;padding:2rem}
+
+/* ── KPI Cards ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:2rem}
+.kpi-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:1.2rem 1.4rem;position:relative;overflow:hidden;
+}
+.kpi-card .accent-bar{position:absolute;top:0;left:0;right:0;height:3px}
+.kpi-label{font-size:0.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px}
+.kpi-value{font-size:1.8rem;font-family:'Syne',sans-serif;font-weight:800;line-height:1}
+.kpi-sub{font-size:0.75rem;color:var(--muted);margin-top:4px}
+
+/* ── Channel Status Pills ── */
+.channel-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:2rem}
+.channel-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:1.2rem 1.4rem;
+}
+.channel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.8rem}
+.channel-icon{font-size:1.5rem}
+.ch-badge{font-size:0.72rem;padding:3px 10px;border-radius:20px;font-weight:600}
+.ch-badge.active{background:rgba(34,197,94,0.15);color:var(--green);border:1px solid rgba(34,197,94,0.2)}
+.ch-badge.inactive{background:rgba(138,143,168,0.1);color:var(--muted);border:1px solid var(--border)}
+.ch-name{font-family:'Syne',sans-serif;font-weight:700;margin-bottom:4px}
+.ch-quota{font-size:0.82rem;color:var(--muted);margin-bottom:8px}
+.progress-bar{height:6px;background:var(--surface2);border-radius:99px;overflow:hidden}
+.progress-fill{height:100%;border-radius:99px;transition:width 0.6s ease}
+.upgrade-link{font-size:0.8rem;color:var(--brand);text-decoration:none;margin-top:8px;display:inline-block}
+.upgrade-link:hover{text-decoration:underline}
+
+/* ── Section card ── */
+.card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:1.5rem;margin-bottom:1.5rem;
+}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;flex-wrap:wrap;gap:0.5rem}
+.card-title{font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:700}
+.card-actions{display:flex;gap:0.5rem;flex-wrap:wrap}
+
+/* ── Tabs ── */
+.tabs{display:flex;gap:4px;background:var(--surface2);border-radius:10px;padding:4px;margin-bottom:1.5rem;flex-wrap:wrap}
+.tab{flex:1;text-align:center;padding:8px 12px;border-radius:8px;cursor:pointer;font-size:0.85rem;transition:all 0.2s;border:none;background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;white-space:nowrap;min-width:80px}
+.tab.active{background:var(--surface);color:var(--text);font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,0.3)}
+
+/* ── Forms ── */
+.field{margin-bottom:1rem}
+.field label{display:block;font-size:0.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px}
+.field input,.field textarea,.field select{
+  width:100%;padding:0.7rem 1rem;background:var(--surface2);
+  border:1px solid var(--border);border-radius:var(--radius);
+  color:var(--text);font-size:0.9rem;font-family:'DM Sans',sans-serif;
+  transition:border-color 0.2s;
+}
+.field input:focus,.field textarea:focus,.field select:focus{outline:none;border-color:var(--brand)}
+.field select option{background:var(--surface2)}
+.field textarea{resize:vertical;min-height:100px;line-height:1.5}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+@media(max-width:600px){.field-row{grid-template-columns:1fr}}
+
+.inline-btn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:7px 14px;border-radius:8px;font-size:0.85rem;
+  cursor:pointer;border:none;transition:all 0.2s;font-family:'DM Sans',sans-serif;white-space:nowrap;
+}
+.inline-btn.primary{background:var(--brand);color:#000;font-weight:600}
+.inline-btn.secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.inline-btn.danger{background:rgba(239,68,68,0.1);color:var(--red);border:1px solid rgba(239,68,68,0.2)}
+.inline-btn:hover{opacity:0.85}
+
+/* ── Table ── */
+.table-wrap{overflow-x:auto;border-radius:var(--radius)}
+table{width:100%;border-collapse:collapse;font-size:0.88rem}
+thead tr{background:var(--surface2)}
+th{padding:10px 14px;text-align:left;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);font-weight:600;white-space:nowrap}
+td{padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:rgba(255,255,255,0.02)}
+
+.status-pill{display:inline-block;padding:3px 10px;border-radius:20px;font-size:0.75rem;font-weight:600;white-space:nowrap}
+.status-pill.sent{background:rgba(34,197,94,0.15);color:var(--green)}
+.status-pill.pending{background:rgba(245,166,35,0.15);color:var(--brand)}
+.status-pill.failed{background:rgba(239,68,68,0.15);color:var(--red)}
+.status-pill.queued{background:rgba(59,130,246,0.15);color:var(--blue)}
+
+/* ── Channel checkboxes ── */
+.ch-checks{display:flex;flex-wrap:wrap;gap:0.6rem;margin-top:6px}
+.ch-check{
+  display:flex;align-items:center;gap:6px;
+  padding:6px 14px;border-radius:8px;cursor:pointer;
+  border:1.5px solid var(--border);transition:all 0.2s;
+  font-size:0.88rem;background:var(--surface2);
+}
+.ch-check:has(input:checked){border-color:var(--brand);background:rgba(245,166,35,0.08);color:var(--brand)}
+.ch-check input{accent-color:var(--brand)}
+
+/* ── Preview box ── */
+.preview-box{
+  background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);
+  padding:1rem;font-size:0.88rem;color:var(--text);min-height:80px;white-space:pre-wrap;line-height:1.6;
+  word-break:break-word;
+}
+
+/* ── Alerts ── */
+.alert{padding:0.75rem 1rem;border-radius:var(--radius);font-size:0.88rem;margin-bottom:1rem;display:none;line-height:1.4}
+.alert.show{display:block}
+.alert.success{background:rgba(34,197,94,0.1);color:#86efac;border:1px solid rgba(34,197,94,0.2)}
+.alert.error{background:rgba(239,68,68,0.1);color:#ef9999;border:1px solid rgba(239,68,68,0.2)}
+.alert.info{background:rgba(59,130,246,0.1);color:#93c5fd;border:1px solid rgba(59,130,246,0.2)}
+
+/* ── Upload zone ── */
+.upload-zone{
+  border:2px dashed var(--border);border-radius:var(--radius);
+  padding:2rem;text-align:center;cursor:pointer;transition:border-color 0.2s;
+  margin-bottom:1rem;
+}
+.upload-zone:hover{border-color:var(--brand)}
+.upload-zone input{display:none}
+.upload-zone .icon{font-size:2rem;margin-bottom:0.5rem}
+.upload-zone p{color:var(--muted);font-size:0.9rem;line-height:1.5}
+.upload-zone .file-name{color:var(--brand);font-size:0.85rem;margin-top:4px}
+
+/* ── Empty state ── */
+.empty{text-align:center;padding:3rem;color:var(--muted)}
+.empty .big-icon{font-size:3rem;margin-bottom:1rem}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--surface)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeIn 0.3s ease}
+
+@media(max-width:600px){
+  .main{padding:1rem}
+  .topbar{padding:0 1rem}
+  .tabs{gap:2px}
+  .tab{font-size:0.78rem;padding:7px 8px}
+}
+</style>
 </head>
+<body>
 
-<body class="min-h-screen bg-gray-50 text-gray-800">
+<!-- ════════════════════ LOGIN ════════════════════ -->
+<div id="loginScreen">
+  <div class="login-box fade-in">
+    <div class="logo-mark">
+      <div class="icon">🔔</div>
+      <h1>Renew<span>Pulse</span></h1>
+    </div>
+    <p style="color:var(--muted);font-size:0.9rem;margin-bottom:1.5rem;line-height:1.5">
+      Automated subscription reminders via WhatsApp, SMS &amp; Email
+    </p>
 
-  <div id="loginScreen" class="fixed inset-0 flex items-center justify-center bg-dark z-50">
-    <div class="w-full max-w-md bg-black p-6 rounded border border-gray-700">
-      <h2 class="text-2xl font-bold text-saffron mb-2">Expiry Notifier</h2>
-      <p class="text-sm text-gray-400 mb-4">Sign up or log in to manage reminders</p>
-
-      <label class="text-xs text-gray-400">Company name (only for signup)</label>
-      <input id="authCompany" placeholder="Company Name"
-             class="w-full mb-3 bg-dark border border-gray-700 rounded px-3 py-2" />
-
-      <label class="text-xs text-gray-400">Email</label>
-      <input id="authEmail" placeholder="you@company.com"
-             class="w-full mb-3 bg-dark border border-gray-700 rounded px-3 py-2" />
-
-      <label class="text-xs text-gray-400">Password</label>
-      <input id="authPassword" type="password" placeholder="password"
-             class="w-full mb-3 bg-dark border border-gray-700 rounded px-3 py-2" />
-
-      <div class="flex gap-3 mb-3">
-        <button onclick="signup()" class="bg-saffron text-black px-4 py-2 rounded font-semibold w-1/2">Sign Up</button>
-        <button onclick="login()" class="bg-green-600 text-white px-4 py-2 rounded w-1/2">Login</button>
-      </div>
-      <div class="mb-3">
-        <script src="https://accounts.google.com/gsi/client" async defer></script>
-
-        <div id="g_id_onload"
-            data-client_id="931122987998-3e2j....apps.googleusercontent.com"
-            data-callback="handleGoogleLogin"
-            data-auto_prompt="false">
-        </div>
-
-        <div class="g_id_signin"
-            data-theme="filled_black"
-            data-size="large"
-            data-shape="rectangular">
-        </div>
-
-      </div>
-
-      <pre id="authResult" class="mt-2 text-xs text-gray-400"></pre>
-      <p class="text-xs text-gray-600 mt-2">Tip: Sign up once — you'll stay logged in on this browser.</p>
+    <div class="input-group" id="signupCompanyWrap">
+      <label>Company Name</label>
+      <input id="authCompany" placeholder="e.g. FitZone Gym"/>
+    </div>
+    <div class="input-group">
+      <label>Email</label>
+      <input id="authEmail" type="email" placeholder="you@company.com"/>
+    </div>
+    <div class="input-group">
+      <label>Password</label>
+      <input id="authPassword" type="password" placeholder="••••••••"/>
     </div>
 
-    
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="handleLogin()">Login</button>
+      <button class="btn btn-primary" onclick="handleSignup()">Sign Up</button>
+    </div>
+
+    <div id="authMsg"></div>
+  </div>
+</div>
+
+<!-- ════════════════════ DASHBOARD ════════════════════ -->
+<div id="dashboard">
+
+  <!-- Top bar -->
+  <nav class="topbar">
+    <div class="topbar-logo">
+      <span class="dot"></span> RenewPulse
+    </div>
+    <div class="topbar-right">
+      <a href="/home.html" class="nav-link">Pricing</a>
+      <a href="/tenant.html" class="nav-link">Billing</a>
+      <span class="company-badge" id="headerCompany"></span>
+      <button class="logout-btn" onclick="doLogout()">Logout</button>
+    </div>
+  </nav>
+
+  <div class="main">
+
+    <!-- KPI row -->
+    <div class="kpi-grid" id="kpiGrid"></div>
+
+    <!-- Channel status -->
+    <div class="channel-grid" id="channelGrid"></div>
+
+    <!-- Main tabs -->
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('members')">👥 Members</button>
+      <button class="tab" onclick="switchTab('rules')">⚡ Rules</button>
+      <button class="tab" onclick="switchTab('history')">📋 History</button>
+      <button class="tab" onclick="switchTab('test')">🧪 Test</button>
+    </div>
+
+    <!-- ── Members Tab ── -->
+    <div id="tab-members" class="fade-in">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Upload Members</div>
+        </div>
+
+        <div class="upload-zone" id="dropzone" onclick="document.getElementById('csvFile').click()">
+          <input type="file" id="csvFile" accept=".csv" onchange="onFileSelected(this)"/>
+          <div class="icon">📂</div>
+          <p>Click to upload CSV or drag and drop</p>
+          <p style="font-size:0.78rem;margin-top:6px">
+            Required: <code>customer_id, expiry_date</code> &nbsp;·&nbsp;
+            Optional: <code>first_name, last_name, email, phone</code>
+          </p>
+          <div class="file-name" id="selectedFileName"></div>
+        </div>
+
+        <button class="inline-btn primary" onclick="uploadCSV()">⬆ Upload Members</button>
+        <div class="alert" id="uploadAlert"></div>
+      </div>
+
+      <!-- Members table -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Upcoming Expiries (30 days)</div>
+          <button class="inline-btn secondary" onclick="loadExpiries()">↻ Refresh</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Name</th><th>Expiry Date</th><th>Days Left</th></tr></thead>
+            <tbody id="expiryTable"><tr><td colspan="3" style="text-align:center;color:var(--muted);padding:2rem">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Rules Tab ── -->
+    <div id="tab-rules" class="fade-in" style="display:none">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Create Automation Rule</div>
+        </div>
+
+        <div class="field">
+          <label>Rule Name</label>
+          <input id="ruleName" placeholder="e.g. 30-Day Expiry Reminder"/>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label>Send Before (days) — comma separated</label>
+            <input id="leadDays" value="30,7,1" placeholder="e.g. 30,7,1"/>
+          </div>
+          <div class="field">
+            <label>Channels</label>
+            <div class="ch-checks">
+              <label class="ch-check"><input type="checkbox" id="chEmail" value="email"/> 📧 Email</label>
+              <label class="ch-check"><input type="checkbox" id="chSMS" value="sms"/> 💬 SMS</label>
+              <label class="ch-check"><input type="checkbox" id="chWhatsApp" value="whatsapp"/> 💚 WhatsApp</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Message Template</label>
+          <textarea id="template" placeholder="Hi {{first_name}}, your subscription expires on {{expiry_date}}. Please renew to continue!">Hi {{first_name}}, your subscription expires on {{expiry_date}}. Please renew to continue!</textarea>
+          <p style="font-size:0.78rem;color:var(--muted);margin-top:4px">Variables: <code>{{first_name}}</code> <code>{{last_name}}</code> <code>{{expiry_date}}</code> <code>{{company_name}}</code></p>
+        </div>
+
+        <div class="field">
+          <label>Live Preview</label>
+          <div class="preview-box" id="previewText"></div>
+        </div>
+
+        <button class="inline-btn primary" onclick="saveRule()">💾 Save Rule</button>
+        <div class="alert" id="ruleAlert" style="margin-top:1rem"></div>
+      </div>
+
+      <!-- Existing rules list -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Active Rules</div>
+          <button class="inline-btn secondary" onclick="loadRules()">↻ Refresh</button>
+        </div>
+        <div id="rulesList">
+          <div class="empty"><div class="big-icon">⚡</div>No rules yet. Create one above.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── History Tab ── -->
+    <div id="tab-history" class="fade-in" style="display:none">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Message History</div>
+          <div class="card-actions">
+            <button class="inline-btn secondary" onclick="loadHistory()">↻ Refresh</button>
+            <button class="inline-btn danger" onclick="triggerSendNow()">▶ Trigger Send Now</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>ID</th><th>Channel</th><th>Recipient</th><th>Status</th><th>Scheduled</th></tr></thead>
+            <tbody id="historyTable"><tr><td colspan="5" style="text-align:center;color:var(--muted);padding:2rem">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Test Send Tab ── -->
+    <div id="tab-test" class="fade-in" style="display:none">
+      <div class="card" style="max-width:520px">
+        <div class="card-header">
+          <div class="card-title">Test Send</div>
+        </div>
+        <div class="field">
+          <label>Customer ID</label>
+          <input id="testCustomerId" placeholder="Enter the customer_id from your CSV"/>
+        </div>
+        <div class="field">
+          <label>Channel</label>
+          <select id="testChannel">
+            <option value="email">📧 Email</option>
+            <option value="sms">💬 SMS</option>
+            <option value="whatsapp">💚 WhatsApp</option>
+          </select>
+        </div>
+        <button class="inline-btn primary" onclick="doTestSend()">🚀 Send Test Message</button>
+        <div class="alert" id="testAlert" style="margin-top:1rem"></div>
+      </div>
     </div>
 
   </div>
-
-  <div id="dashboard" class="hidden min-h-screen bg-gradient-to-br from-[#f7fafc] via-[#f8fbff] to-[#eef6ff]">
-
-    <!-- Header -->
-    <header class="bg-white/80 backdrop-blur border-b border-gray-200 px-6 py-4 flex items-center justify-between sticky top-0 z-40">
-      <div>
-        <h1 class="text-xl font-semibold tracking-tight" style="color:#0b3d91">
-          Expiry Notifier
-        </h1>
-        <p class="text-xs text-gray-500">Automation & reminder management</p>
-      </div>
-
-      <div class="flex items-center gap-4">
-        <span class="px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-900 border border-blue-100">
-          Active Plan
-        </span>
-
-        <div id="headerCompany" class="text-sm text-gray-700"></div>
-
-        <button onclick="logout()"
-          class="text-sm px-4 py-1 rounded border border-gray-200 hover:bg-gray-50 transition">
-          Logout
-        </button>
-      </div>
-    </header>
-
-    <main class="max-w-6xl mx-auto px-6 py-10 space-y-10">
-
-      <!-- KPI Row -->
-      <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
-
-        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-          <div id="kpiTotal" class="text-2xl font-bold mt-2 text-blue-900">—</div>
-          <div id="kpiDelivery" class="text-2xl font-bold mt-2 text-green-600">—</div>
-          <div id="kpiRules" class="text-2xl font-bold mt-2 text-yellow-600">—</div>
-        </div>
-
-        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-          <div class="text-sm text-gray-500">Delivery Rate</div>
-          <div class="text-2xl font-bold mt-2 text-green-600">98.4%</div>
-          <div class="text-xs text-gray-400 mt-1">Healthy performance</div>
-        </div>
-
-        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-          <div class="text-sm text-gray-500">Automation Rules</div>
-          <div class="text-2xl font-bold mt-2" style="color:#F4A300">3 Active</div>
-          <div class="text-xs text-gray-400 mt-1">Managing expiries</div>
-        </div>
-
-      </section>
-
-      <!-- Message History -->
-      <section class="bg-white rounded-2xl p-8 shadow-md border border-gray-100">
-        <div class="flex justify-between items-center mb-6">
-          <h2 class="text-lg font-semibold tracking-tight" style="color:#0b3d91">
-            Message History
-          </h2>
-
-          <div class="flex gap-3">
-            <button onclick="loadHistory()"
-              class="px-5 py-2 rounded-lg text-white font-semibold shadow-sm hover:opacity-90 transition"
-              style="background:#0b3d91">
-              Refresh
-            </button>
-
-            <button onclick="sendNowDemo()"
-              class="px-5 py-2 rounded-lg text-white font-semibold bg-red-600 hover:bg-red-700 transition">
-              Send All Now
-            </button>
-          </div>
-        </div>
-
-        <div id="historyStatus" class="text-xs text-gray-500 mb-3"></div>
-        <div id="historyTable" class="text-sm text-gray-700 overflow-auto max-h-80"></div>
-      </section>
-
-      <!-- Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
-
-        <!-- Company Settings -->
-        <section class="bg-white rounded-2xl p-8 shadow-md border border-gray-100">
-          <h2 class="text-lg font-semibold mb-6 tracking-tight" style="color:#0b3d91">
-            Company Settings
-          </h2>
-
-          <label class="block text-sm text-gray-600 mb-1">Company Name</label>
-          <input id="companyName"
-            class="w-full mb-5 border border-gray-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#0b3d91] outline-none transition" />
-
-          <label class="block text-sm text-gray-600 mb-1">Sender Email</label>
-          <input id="senderEmail"
-            class="w-full border border-gray-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#0b3d91] outline-none transition" />
-
-          <button onclick="saveCompany()"
-            class="mt-6 px-6 py-3 rounded-lg font-semibold text-black shadow-sm hover:opacity-90 transition"
-            style="background:#F4A300">
-            Save Settings
-          </button>
-        </section>
-
-        <!-- Upload -->
-        <section class="bg-white rounded-2xl p-8 shadow-md border border-gray-100">
-          <h2 class="text-lg font-semibold mb-6 tracking-tight" style="color:#0b3d91">
-            Upload Customers
-          </h2>
-
-          <input type="file" id="csvFile" accept=".csv"
-            class="block w-full text-sm text-gray-700 
-                  file:bg-[#F4A300] file:text-black 
-                  file:px-5 file:py-2 file:border-none file:rounded-lg 
-                  cursor-pointer mb-6"/>
-
-          <button onclick="uploadCSV()"
-            class="px-6 py-3 rounded-lg font-semibold text-black shadow-sm hover:opacity-90 transition"
-            style="background:#F4A300">
-            Upload CSV
-          </button>
-        </section>
-      </div>
-
-      <!-- Automation -->
-      <section class="bg-white rounded-2xl p-8 shadow-md border border-gray-100">
-        <h2 class="text-lg font-semibold mb-8 tracking-tight" style="color:#0b3d91">
-          Message & Automation
-        </h2>
-
-        <textarea id="template" rows="4"
-          class="w-full border border-gray-200 rounded-xl px-5 py-4 mb-8 focus:ring-2 focus:ring-[#0b3d91] outline-none transition"
-          placeholder="Hi {{first_name}}, your subscription expires on {{expiry_date}}.">
-        </textarea>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
-
-          <div>
-            <label class="text-sm text-gray-600">Lead Days</label>
-            <input id="leadDays"
-              class="w-full mt-2 border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#0b3d91] outline-none transition"
-              value="5,10,20" />
-          </div>
-
-          <div>
-            <label class="text-sm text-gray-600">Channels</label>
-            <div class="flex gap-5 mt-3 text-sm text-gray-700">
-              <label><input type="checkbox" id="chEmail" checked /> Email</label>
-              <label><input type="checkbox" id="chSMS" checked /> SMS</label>
-            </div>
-          </div>
-
-          <div class="flex items-end">
-            <button onclick="createRule()"
-              class="w-full px-5 py-3 rounded-lg font-semibold text-black shadow-sm hover:opacity-90 transition"
-              style="background:#F4A300">
-              Save Automation Rule
-            </button>
-          </div>
-        </div>
-
-        <!-- Preview + Test -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
-
-          <div class="bg-gray-50 border border-gray-200 rounded-2xl p-6">
-            <div class="font-semibold mb-3" style="color:#0b3d91">
-              Live Preview
-            </div>
-            <p id="previewText" class="text-gray-700 text-sm"></p>
-          </div>
-
-          <div class="bg-gray-50 border border-gray-200 rounded-2xl p-6">
-            <div class="font-semibold mb-5" style="color:#0b3d91">
-              Test Send
-            </div>
-
-            <input id="testCustomerId"
-              class="w-full mb-4 border border-gray-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#0b3d91] outline-none transition"
-              placeholder="Customer ID" />
-
-            <select id="testChannel"
-              class="w-full mb-4 border border-gray-200 rounded-lg px-4 py-3">
-              <option value="email">Email</option>
-              <option value="sms">SMS</option>
-            </select>
-
-            <button onclick="testSend()"
-              class="px-6 py-3 rounded-lg font-semibold text-white shadow-sm hover:opacity-90 transition"
-              style="background:#0b3d91">
-              Send Now
-            </button>
-          </div>
-        </div>
-      </section>
-
-      <pre id="result"
-        class="bg-white border border-gray-200 rounded-2xl p-6 text-xs text-gray-600 shadow-sm">
-      </pre>
-
-    </main>
-  </div>
-
-
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</div>
 
 <script>
-/*
-  Single-file frontend logic.
-  - Uses localStorage 'tenant_id' to persist login.
-  - Expects backend endpoints:
-     POST /api/signup { company_name, email, password } -> { tenant_id }
-     POST /api/login { email, password } -> { tenant_id, company_name }
-     POST /api/google-login { token } -> { tenant_id, company_name }
-     POST /api/upload (multipart/form-data)
-     POST /api/rules
-     POST /api/test-send
-     GET  /api/history/:tenant_id
-     POST /api/send-now  (optional demo)
-     POST /api/company (optional to save companyName/senderEmail)
-*/
-
-let TOKEN = localStorage.getItem("token");
-let COMPANY_NAME = localStorage.getItem("company_name");
+let TOKEN       = localStorage.getItem('token');
+let COMPANY     = localStorage.getItem('company_name') || '';
 
 window.onload = () => {
-  if (TOKEN) {
-    showDashboard();
-  } else {
-    showLogin();
-  }
+  if (TOKEN) initDashboard();
 };
 
+async function handleSignup() {
+  const company = document.getElementById('authCompany').value.trim();
+  const email   = document.getElementById('authEmail').value.trim();
+  const pass    = document.getElementById('authPassword').value;
+  if (!company || !email || !pass) return showAuthMsg('Fill all fields.', 'error');
 
-// -------- UI show/hide ----------
-function showLogin() {
-  document.getElementById("loginScreen").classList.remove("hidden");
-  document.getElementById("dashboard").classList.add("hidden");
+  const res  = await fetch('/api/signup', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({company_name:company,email,password:pass}) });
+  const data = await res.json();
+  if (data.success) showAuthMsg('Account created! You can now login.', 'success');
+  else showAuthMsg(data.error || 'Signup failed', 'error');
+}
+
+async function handleLogin() {
+  const email = document.getElementById('authEmail').value.trim();
+  const pass  = document.getElementById('authPassword').value;
+  if (!email || !pass) return showAuthMsg('Enter email and password.', 'error');
+
+  const res  = await fetch('/api/login', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email,password:pass}) });
+  const data = await res.json();
+  if (data.token) {
+    TOKEN   = data.token;
+    COMPANY = data.company_name || '';
+    localStorage.setItem('token', TOKEN);
+    localStorage.setItem('company_name', COMPANY);
+    initDashboard();
+  } else {
+    showAuthMsg(data.error || 'Login failed', 'error');
+  }
+}
+
+function showAuthMsg(msg, type) {
+  const el = document.getElementById('authMsg');
+  el.textContent   = msg;
+  el.className     = type;
+  el.style.display = 'block';
+}
+
+function doLogout() {
+  localStorage.clear();
+  location.href = '/';
+}
+
+function initDashboard() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('dashboard').style.display   = 'block';
+  document.getElementById('headerCompany').textContent  = COMPANY;
+
+  loadStats();
+  loadExpiries();
+  loadHistory();
+  loadRules();
+
+  document.getElementById('template').addEventListener('input', updatePreview);
+  updatePreview();
 }
 
 async function loadStats() {
-  const res = await fetch("/api/tenant/stats", {
-    headers: { Authorization: `Bearer ${TOKEN}` }
-  });
-
-  if (!res.ok) return;
-
+  const res  = await fetch('/api/tenant/stats', { headers:{ Authorization:'Bearer ' + TOKEN } });
   const data = await res.json();
 
-  document.getElementById("kpiTotal").innerText = data.jobs_used || 0;
+  const kpiGrid = document.getElementById('kpiGrid');
+  const total   = data.channel_stats?.reduce((s,c) => s + (c.used || 0), 0) || 0;
+  kpiGrid.innerHTML = `
+    <div class="kpi-card">
+      <div class="accent-bar" style="background:var(--brand)"></div>
+      <div class="kpi-label">Total Sent</div>
+      <div class="kpi-value">${total.toLocaleString()}</div>
+      <div class="kpi-sub">This month</div>
+    </div>
+    <div class="kpi-card">
+      <div class="accent-bar" style="background:var(--red)"></div>
+      <div class="kpi-label">Failed</div>
+      <div class="kpi-value" style="color:var(--red)">${data.failed_jobs || 0}</div>
+      <div class="kpi-sub">This month</div>
+    </div>
+    <div class="kpi-card">
+      <div class="accent-bar" style="background:var(--green)"></div>
+      <div class="kpi-label">Active Plans</div>
+      <div class="kpi-value" style="color:var(--green)">${(data.active_plans||[]).length}</div>
+      <div class="kpi-sub">Channels enabled</div>
+    </div>
+  `;
 
-  const deliveryRate = data.jobs_used > 0
-    ? ((data.jobs_used - data.failed_jobs) / data.jobs_used * 100).toFixed(1)
-    : 0;
+  const CH_META = {
+    email:     { icon:'📧', color:'var(--blue)',   label:'Email' },
+    sms:       { icon:'💬', color:'var(--brand)',  label:'SMS' },
+    whatsapp:  { icon:'💚', color:'var(--green)',  label:'WhatsApp' }
+  };
 
-  document.getElementById("kpiDelivery").innerText = deliveryRate + "%";
-  document.getElementById("kpiRules").innerText = (data.active_rules || 0) + " Active";
+  const channelGrid = document.getElementById('channelGrid');
+  channelGrid.innerHTML = (data.channel_stats || []).map(ch => {
+    const meta = CH_META[ch.channel] || { icon:'📡', color:'var(--muted)', label:ch.channel };
+    const pct  = ch.quota > 0 ? Math.min(100, (ch.used/ch.quota)*100) : 0;
+    const pctColor = pct > 85 ? 'var(--red)' : pct > 60 ? 'var(--brand)' : meta.color;
+
+    return `
+      <div class="channel-card">
+        <div class="channel-header">
+          <span class="channel-icon">${meta.icon}</span>
+          <span class="ch-badge ${ch.enabled ? 'active' : 'inactive'}">${ch.enabled ? '● Active' : '○ Inactive'}</span>
+        </div>
+        <div class="ch-name">${meta.label}</div>
+        ${ch.enabled ? `
+          <div class="ch-quota">${ch.used.toLocaleString()} / ${ch.quota.toLocaleString()} used</div>
+          <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${pctColor}"></div></div>
+        ` : `
+          <div class="ch-quota">Not in your plan</div>
+          <a href="/home.html#pricing" class="upgrade-link">+ Add this channel →</a>
+        `}
+      </div>
+    `;
+  }).join('');
 }
 
-
-function showDashboard() {
-  document.getElementById("loginScreen").classList.add("hidden");
-  document.getElementById("dashboard").classList.remove("hidden");
-
-  COMPANY_NAME = localStorage.getItem("company_name");
-  document.getElementById("headerCompany").innerText = COMPANY_NAME || "";
-
-  loadCompany();
-  loadHistory();
-  loadStats();
-
+function switchTab(name) {
+  const names = ['members','rules','history','test'];
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', names[i] === name));
+  names.forEach(t => { document.getElementById('tab-' + t).style.display = t === name ? 'block' : 'none'; });
 }
 
-// -------- Auth functions ----------
-async function signup() {
-  const company_name = document.getElementById("authCompany").value.trim();
-  const email = document.getElementById("authEmail").value.trim();
-  const password = document.getElementById("authPassword").value;
+function onFileSelected(input) {
+  const f = input.files[0];
+  document.getElementById('selectedFileName').textContent = f ? 'Selected: ' + f.name : '';
+}
 
-  if (!company_name || !email || !password) {
-    document.getElementById("authResult").innerText = "Fill all fields.";
-    return;
-  }
+async function uploadCSV() {
+  const file = document.getElementById('csvFile').files[0];
+  if (!file) return showAlert('uploadAlert', 'No file selected', 'error');
 
-  const res = await fetch("/api/signup", {
-    method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({ company_name, email, password })
-  });
+  const form = new FormData();
+  form.append('file', file);
+  showAlert('uploadAlert', 'Uploading...', 'info');
 
+  const res  = await fetch('/api/upload', { method:'POST', headers:{ Authorization:'Bearer ' + TOKEN }, body:form });
   const data = await res.json();
 
   if (data.success) {
-    document.getElementById("authResult").innerText = "Signup successful. Please login.";
+    showAlert('uploadAlert', '✅ Uploaded ' + data.inserted + ' members' + (data.skipped ? ' (' + data.skipped + ' skipped)' : ''), 'success');
+    loadExpiries();
   } else {
-    document.getElementById("authResult").innerText = data.error || "Signup failed.";
+    showAlert('uploadAlert', data.error || 'Upload failed', 'error');
   }
 }
 
-async function login() {
-  const email = document.getElementById("authEmail").value.trim();
-  const password = document.getElementById("authPassword").value;
+async function loadExpiries() {
+  const res  = await fetch('/api/tenant/upcoming-expiries', { headers:{ Authorization:'Bearer ' + TOKEN } });
+  const data = await res.json();
+  const tbody = document.getElementById('expiryTable');
 
-  if (!email || !password) {
-    document.getElementById("authResult").innerText = "Enter email and password.";
+  if (!Array.isArray(data) || !data.length) {
+    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:2rem">No upcoming expiries in the next 30 days</td></tr>';
     return;
   }
 
-  const res = await fetch("/api/login", {
-    method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({ email, password })
-  });
-
-  const data = await res.json();
-
-  if (data.token) {
-    TOKEN = data.token;
-    COMPANY_NAME = data.company_name;
-
-    localStorage.setItem("token", TOKEN);
-    localStorage.setItem("company_name", COMPANY_NAME || "");
-
-    // Redirect to the new home page that offers choices
-    location.reload();
-
-  } else {
-    document.getElementById("authResult").innerText = data.error || "Login failed.";
-  }
-
+  tbody.innerHTML = data.map(c => {
+    const d = c.days_left;
+    const color = d <= 3 ? 'var(--red)' : d <= 7 ? 'var(--brand)' : 'var(--green)';
+    return '<tr><td>' + (c.customer_name || '—') + '</td><td>' + new Date(c.expiry_date).toLocaleDateString('en-IN') + '</td><td style="color:' + color + ';font-weight:600">' + d + ' days</td></tr>';
+  }).join('');
 }
 
-
-function logout() {
-  localStorage.removeItem("token");
-  localStorage.removeItem("company_name");
-  token = null;
-  COMPANY_NAME = null;
-  showLogin();
-}
-
-// -------- Google Sign-in callback (frontend) --------
-// This receives a credential (ID token) from Google Identity Services.
-// Server must verify the token and return tenant info.
-async function handleGoogleLogin(response) {
-  // response.credential is a JWT from Google
-  const res = await fetch('/api/google-login', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ token: response.credential })
-  });
-
-  const data = await res.json();
-
-  if (data.token) {
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("company_name", data.company_name || "");
-    location.reload();
-  } else {
-    alert('Google login failed');
-  }
-}
-// -------- Company save (optional backend) ----------
-async function saveCompany() {
-  const company_name = document.getElementById("companyName").value.trim();
-  const sender = document.getElementById("senderEmail").value.trim();
-
-  // If you add a backend endpoint to store per-tenant company settings, call it here.
-  // For now we just store locally and show header.
-  COMPANY_NAME = company_name || COMPANY_NAME;
-  localStorage.setItem("company_name", COMPANY_NAME || "");
-  document.getElementById("headerCompany").innerText = COMPANY_NAME || "";
-  showResult({ success: true, saved: { company_name, sender } });
-
-  // Optional: POST /api/company { tenant_id, company_name, sender_email }
-  // Uncomment if you implement server-side storage.
-  /*
-  await fetch('/api/company', {
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ tenant_id: TENANT_ID, company_name, sender_email: sender })
-  });
-  */
-}
-
-async function loadCompany() {
-  // If you store company data server-side, fetch it here and populate fields.
-  const localName = localStorage.getItem("company_name");
-  if (localName) {
-    document.getElementById("companyName").value = localName;
-    document.getElementById("headerCompany").innerText = localName;
-  }
-}
-
-// -------- CSV Upload ----------
-async function uploadCSV() {
-  const file = document.getElementById("csvFile").files[0];
-  if (!file) return alert("Select CSV");
-
-  const form = new FormData();
-  form.append("file", file);
-
-  const res = await fetch("/api/upload", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${TOKEN}`
-    },
-    body: form
-  });
-
-  const data = await res.json();
-  showResult(data);
-}
-
-// -------- Create rule ----------
-async function createRule() {
-  const lead_days = (document.getElementById("leadDays").value || '')
-    .split(',')
-    .map(x => parseInt(x.trim()))
-    .filter(Boolean);
-
-  const channels = [];
-  if (document.getElementById("chEmail").checked) channels.push("email");
-  if (document.getElementById("chSMS").checked) channels.push("sms");
-
-  const body = {
-    name: "Expiry Reminder",
-    lead_days,
-    channels,
-    template: document.getElementById("template").value
-  };
-
-  const res = await fetch("/api/rules", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${TOKEN}`
-    },
-    body: JSON.stringify(body)
-  });
-
-  const data = await res.json();
-  showResult(data);
-}
-
-// -------- Live preview ----------
-document.getElementById("template").addEventListener("input", updatePreview);
 function updatePreview() {
-  let t = document.getElementById("template").value || '';
-  t = t.replace('{{first_name}}', 'John').replace('{{expiry_date}}', '2026-03-20');
-  document.getElementById("previewText").innerText = t;
-}
-updatePreview();
-
-// copy preview text
-function previewToClipboard() {
-  const txt = document.getElementById("previewText").innerText;
-  navigator.clipboard.writeText(txt).then(()=> {
-    showResult({ success: true, copied: txt });
-  });
+  let t = document.getElementById('template').value || '';
+  t = t.replace(/{{first_name}}/g,'John')
+       .replace(/{{last_name}}/g,'Doe')
+       .replace(/{{expiry_date}}/g,'2025-03-31')
+       .replace(/{{company_name}}/g, COMPANY || 'FitZone');
+  document.getElementById('previewText').textContent = t;
 }
 
-// -------- Test send (immediate) ----------
-async function testSend() {
-  const customer_id = document.getElementById("testCustomerId").value.trim();
-  const channel = document.getElementById("testChannel").value;
+async function saveRule() {
+  const name      = document.getElementById('ruleName').value.trim() || 'Expiry Reminder';
+  const lead_days = document.getElementById('leadDays').value.split(',').map(x=>parseInt(x.trim())).filter(Boolean);
+  const template  = document.getElementById('template').value.trim();
+  const channels  = ['chEmail','chSMS','chWhatsApp']
+    .filter(id => document.getElementById(id).checked)
+    .map(id => ({ chEmail:'email', chSMS:'sms', chWhatsApp:'whatsapp' })[id]);
 
-  if (!customer_id) return alert("Enter Customer ID");
+  if (!channels.length) return showAlert('ruleAlert', 'Select at least one channel', 'error');
+  if (!lead_days.length) return showAlert('ruleAlert', 'Enter valid lead days', 'error');
+  if (!template)          return showAlert('ruleAlert', 'Template is required', 'error');
 
-  const res = await fetch("/api/test-send", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${TOKEN}`
-    },
-    body: JSON.stringify({ customer_id, channel })
-  });
-
+  const res  = await fetch('/api/rules', { method:'POST', headers:{'Content-Type':'application/json',Authorization:'Bearer ' + TOKEN}, body:JSON.stringify({name,lead_days,channels,template}) });
   const data = await res.json();
-  showResult(data);
+
+  if (data.success) {
+    showAlert('ruleAlert', '✅ Rule saved! Scheduler will create jobs on next run.', 'success');
+    loadRules();
+  } else {
+    showAlert('ruleAlert', data.error || 'Failed to save rule', 'error');
+  }
 }
 
-
-
-// -------- Message history ----------
-async function loadHistory() {
-  document.getElementById("historyStatus").innerText = "Loading...";
-  const res = await fetch(`/api/history`, {
-    headers: {
-      Authorization: `Bearer ${TOKEN}`
-    }
-  });
+async function loadRules() {
+  const res  = await fetch('/api/rules', { headers:{ Authorization:'Bearer ' + TOKEN } });
   const data = await res.json();
-  document.getElementById("historyStatus").innerText = "";
+  const el   = document.getElementById('rulesList');
 
-  if (!Array.isArray(data)) {
-    document.getElementById("historyTable").innerText = JSON.stringify(data, null, 2);
+  if (!Array.isArray(data) || !data.length) {
+    el.innerHTML = '<div class="empty"><div class="big-icon">⚡</div>No rules yet. Create one above.</div>';
     return;
   }
 
-  let html = `<table class="w-full text-left border border-gray-700 text-xs">
-    <thead class="text-saffron">
-      <tr><th class="p-2">ID</th><th class="p-2">Customer</th><th class="p-2">Channel</th><th class="p-2">Status</th><th class="p-2">Scheduled</th></tr>
-    </thead><tbody>`;
-
-  data.forEach(j => {
-    html += `<tr class="border-t border-gray-700">
-      <td class="p-2">${j.id}</td>
-      <td class="p-2">${j.customer_id || j.customer_id}</td>
-      <td class="p-2">${j.channel}</td>
-      <td class="p-2">${j.status}</td>
-      <td class="p-2">${j.scheduled_at ? new Date(j.scheduled_at).toLocaleString() : ''}</td>
-    </tr>`;
-  });
-
-  html += `</tbody></table>`;
-  document.getElementById("historyTable").innerHTML = html;
+  el.innerHTML = data.map(r => {
+    const chs = (r.channels || []).map(c => ({ email:'📧',sms:'💬',whatsapp:'💚' }[c] || c)).join(' ');
+    return '<div style="padding:0.8rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:1rem"><div><div style="font-weight:600">' + r.name + '</div><div style="font-size:0.8rem;color:var(--muted);margin-top:3px">' + chs + ' &nbsp;·&nbsp; ' + (r.lead_days||[]).join(', ') + ' days before</div></div><span style="font-size:0.78rem;padding:3px 10px;border-radius:20px;background:rgba(34,197,94,0.15);color:var(--green);white-space:nowrap">' + (r.is_active ? '● Active' : '○ Inactive') + '</span></div>';
+  }).join('');
 }
 
-// -------- Demo: send all now (optional backend required) ----------
-async function sendNowDemo() {
-  if (!confirm("Send all pending tenant messages now?")) return;
-
-  const res = await fetch("/api/send-now", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${TOKEN}`
-    }
-  });
-
+async function loadHistory() {
+  const res  = await fetch('/api/history', { headers:{ Authorization:'Bearer ' + TOKEN } });
   const data = await res.json();
-  showResult(data);
-  setTimeout(loadHistory, 1500);
+  const tbody = document.getElementById('historyTable');
+
+  if (!Array.isArray(data) || !data.length) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:2rem">No messages yet</td></tr>';
+    return;
+  }
+
+  const CH_ICON = { email:'📧', sms:'💬', whatsapp:'💚' };
+  tbody.innerHTML = data.map(j => '<tr><td style="color:var(--muted)">#' + j.id + '</td><td>' + (CH_ICON[j.channel]||'') + ' ' + (j.channel||'').toUpperCase() + '</td><td style="font-size:0.82rem">' + (j.recipient||'—') + '</td><td><span class="status-pill ' + j.status + '">' + j.status + '</span></td><td style="color:var(--muted);font-size:0.82rem">' + (j.scheduled_at ? new Date(j.scheduled_at).toLocaleString('en-IN') : '—') + '</td></tr>').join('');
 }
 
+async function triggerSendNow() {
+  if (!confirm('Trigger job executor now?')) return;
+  const res  = await fetch('/api/send-now', { method:'POST', headers:{ Authorization:'Bearer ' + TOKEN } });
+  const data = await res.json();
+  if (data.success) { loadHistory(); loadStats(); }
+}
 
-// -------- small utility ----------
-function showResult(obj) {
-  document.getElementById("result").innerText = JSON.stringify(obj, null, 2);
-  console.log(obj);
+async function doTestSend() {
+  const customer_id = document.getElementById('testCustomerId').value.trim();
+  const channel     = document.getElementById('testChannel').value;
+
+  if (!customer_id) return showAlert('testAlert', 'Enter a customer ID', 'error');
+
+  showAlert('testAlert', 'Sending...', 'info');
+
+  const res  = await fetch('/api/test-send', { method:'POST', headers:{'Content-Type':'application/json',Authorization:'Bearer ' + TOKEN}, body:JSON.stringify({customer_id,channel}) });
+  const data = await res.json();
+
+  if (data.success) showAlert('testAlert', '✅ Test message sent via ' + channel + '! Provider ID: ' + data.provider_id, 'success');
+  else showAlert('testAlert', data.error || 'Failed', 'error');
+}
+
+function showAlert(id, msg, type) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.className   = 'alert ' + type + ' show';
 }
 </script>
-
 </body>
 </html>

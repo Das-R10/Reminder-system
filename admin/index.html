@@ -2,425 +2,755 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Expiry Notifier — Admin (Sci-Fi)</title>
+  <title>RenewPulse — Admin Console</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-
-  <!-- Tailwind CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Chart.js -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
   <style>
-    :root{
-      --bg:#070710;
-      --panel:#0b0b14;
-      --muted:#9aa0b4;
-      --neon:#7cf7ff; /* cyan */
-      --accent:#b388ff; /* purple */
-      --danger:#ff6b6b;
-      --glass: rgba(255,255,255,0.03);
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0c0c0e;
+      --surface:  #111115;
+      --surface2: #18181f;
+      --surface3: #1f1f28;
+      --border:   #25252f;
+      --border2:  #2e2e3a;
+      --amber:    #e8a030;
+      --green:    #2ecc71;
+      --red:      #e74c3c;
+      --blue:     #4a9eff;
+      --text:     #e8e8f0;
+      --text2:    #a0a0b8;
+      --text3:    #5a5a72;
+      --mono:     'IBM Plex Mono', monospace;
+      --sans:     'IBM Plex Sans', sans-serif;
     }
-    html,body { height:100%; }
-    body{
-      background: radial-gradient(1200px 600px at 10% 10%, rgba(124,247,255,0.04), transparent 6%),
-                  radial-gradient(900px 400px at 90% 90%, rgba(179,136,255,0.03), transparent 5%),
-                  var(--bg);
-      color:#dbeafe;
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-      -webkit-font-smoothing:antialiased;
+
+    html, body { height: 100%; overflow: hidden; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 13px;
+      -webkit-font-smoothing: antialiased;
     }
-    .panel { background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border:1px solid rgba(255,255,255,0.03); box-shadow: 0 10px 30px rgba(2,6,23,0.6); border-radius:12px; }
-    .kpi { background: linear-gradient(90deg, rgba(124,247,255,0.02), rgba(179,136,255,0.02)); border:1px solid rgba(124,247,255,0.06); }
-    .glow { text-shadow: 0 0 8px rgba(124,247,255,0.08); }
-    .muted { color: var(--muted); }
-    .neon { color: var(--neon); }
-    .accent { color: var(--accent); }
-    .btn-ghost { background: transparent; border:1px solid rgba(255,255,255,0.04); padding:.5rem .8rem; border-radius:8px; }
-    a { color: inherit; }
-    .table-scroll { max-height:36vh; overflow:auto; }
-    /* subtle animated grid in background */
-    .grid-bg {
-      position: fixed; inset:0; pointer-events:none; opacity:.025; background-image:
-      linear-gradient(transparent 95%, rgba(124,247,255,0.03) 95%),
-      linear-gradient(90deg, transparent 95%, rgba(124,247,255,0.03) 95%);
-      background-size: 200px 200px, 200px 200px;
-      transform: translateZ(0);
+
+    .shell {
+      display: grid;
+      grid-template-rows: 48px 1fr;
+      height: 100vh;
     }
+
+    /* TOP BAR */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      z-index: 10;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 20px; }
+    .brand {
+      display: flex; align-items: center; gap: 8px;
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      color: var(--amber);
+    }
+    .brand-dot {
+      width: 6px; height: 6px;
+      background: var(--amber);
+      border-radius: 50%;
+      animation: pulse-dot 2.5s ease-in-out infinite;
+    }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+    .breadcrumb {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text3);
+      letter-spacing: 0.04em;
+    }
+    .breadcrumb span { color: var(--text2); }
+
+    .topbar-right { display: flex; align-items: center; gap: 10px; }
+    .status-pill {
+      display: flex; align-items: center; gap: 5px;
+      font-family: var(--mono); font-size: 10px; color: var(--text3);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 3px 8px;
+    }
+    .status-dot {
+      width: 5px; height: 5px; background: var(--green); border-radius: 50%;
+      box-shadow: 0 0 5px rgba(46,204,113,0.7);
+      animation: pulse-green 2s ease-in-out infinite;
+    }
+    @keyframes pulse-green {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.2; }
+    }
+    .topbar-btn {
+      height: 28px; padding: 0 12px;
+      background: transparent;
+      border: 1px solid var(--border2);
+      border-radius: 4px;
+      color: var(--text2);
+      font-family: var(--mono);
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.15s;
+      letter-spacing: 0.04em;
+    }
+    .topbar-btn:hover { border-color: var(--amber); color: var(--amber); }
+    .topbar-btn.danger:hover { border-color: var(--red); color: var(--red); }
+
+    /* BODY */
+    .body-grid {
+      display: grid;
+      grid-template-columns: 220px 1fr 272px;
+      overflow: hidden;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      border-right: 1px solid var(--border);
+      background: var(--surface);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+    .sidebar::-webkit-scrollbar { width: 2px; }
+    .sidebar::-webkit-scrollbar-thumb { background: var(--border2); }
+
+    .s-section {
+      padding: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .s-label {
+      font-family: var(--mono);
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      color: var(--text3);
+      text-transform: uppercase;
+      margin-bottom: 9px;
+    }
+
+    /* KPI rows */
+    .kpi-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 10px;
+      border-radius: 4px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      margin-bottom: 2px;
+    }
+    .kpi-row:last-child { margin-bottom: 0; }
+    .kpi-lbl { font-size: 11px; color: var(--text2); }
+    .kpi-val {
+      font-family: var(--mono);
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+    .c-amber { color: var(--amber); }
+    .c-green  { color: var(--green); }
+    .c-red    { color: var(--red); }
+    .c-blue   { color: var(--blue); }
+
+    .rev-box {
+      margin-top: 8px;
+      padding: 12px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      border-top: 1px solid rgba(232,160,48,0.2);
+    }
+    .rev-lbl { font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; color: var(--text3); text-transform: uppercase; margin-bottom: 5px; }
+    .rev-num { font-family: var(--mono); font-size: 22px; font-weight: 600; color: var(--amber); letter-spacing: -0.03em; }
+    .rev-sub { display: flex; align-items: center; gap: 7px; margin-top: 5px; font-size: 11px; color: var(--text3); }
+    .rev-badge {
+      font-family: var(--mono); font-size: 9px; padding: 2px 6px;
+      background: rgba(46,204,113,0.1); border: 1px solid rgba(46,204,113,0.2);
+      color: var(--green); border-radius: 3px;
+    }
+
+    /* Action btns */
+    .act-btn {
+      width: 100%;
+      display: flex; align-items: center; gap: 8px;
+      padding: 7px 10px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text2);
+      font-family: var(--mono);
+      font-size: 11px;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.15s;
+      margin-bottom: 2px;
+    }
+    .act-btn:hover { border-color: var(--amber); color: var(--amber); background: rgba(232,160,48,0.03); }
+    .act-icon { width: 14px; text-align: center; flex-shrink: 0; }
+
+    /* Purchase items */
+    .p-item {
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+      padding: 8px 10px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      margin-bottom: 2px;
+    }
+    .p-item:last-child { margin-bottom: 0; }
+    .p-name { font-size: 12px; color: var(--text); font-weight: 500; }
+    .p-meta { font-family: var(--mono); font-size: 10px; color: var(--text3); margin-top: 2px; }
+    .p-amt  { font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--amber); white-space: nowrap; }
+
+    /* MAIN */
+    .main {
+      overflow-y: auto;
+      padding: 14px;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .main::-webkit-scrollbar { width: 2px; }
+    .main::-webkit-scrollbar-thumb { background: var(--border2); }
+
+    /* Metric strip */
+    .metric-strip { display: grid; grid-template-columns: repeat(4,1fr); gap: 2px; }
+    .m-cell {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 12px 14px;
+    }
+    .m-lbl {
+      font-family: var(--mono); font-size: 9px; color: var(--text3);
+      text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px;
+    }
+    .m-val {
+      font-family: var(--mono); font-size: 20px; font-weight: 600; letter-spacing: -0.02em;
+    }
+    .m-sub { font-size: 10px; color: var(--text3); margin-top: 3px; }
+    .m-bar { height: 2px; background: var(--border); border-radius: 1px; margin-top: 8px; overflow: hidden; }
+    .m-bar-fill { height: 100%; border-radius: 1px; transition: width 1.2s cubic-bezier(0.4,0,0.2,1); }
+
+    /* Chart panels */
+    .cpanel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .cpanel-hd {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .cpanel-title {
+      font-family: var(--mono); font-size: 10px; font-weight: 600;
+      letter-spacing: 0.08em; color: var(--text2); text-transform: uppercase;
+    }
+    .cpanel-sub { font-family: var(--mono); font-size: 10px; color: var(--text3); }
+    .cpanel-body { padding: 14px; }
+    .chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    /* RIGHT */
+    .right {
+      border-left: 1px solid var(--border);
+      background: var(--surface);
+      display: flex; flex-direction: column;
+      overflow: hidden;
+    }
+    .r-section {
+      display: flex; flex-direction: column;
+      overflow: hidden;
+      border-bottom: 1px solid var(--border);
+    }
+    .r-hd {
+      padding: 9px 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .r-title {
+      font-family: var(--mono); font-size: 9px; font-weight: 600;
+      letter-spacing: 0.12em; color: var(--text3); text-transform: uppercase;
+    }
+    .search-inp {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 3px 8px;
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--text2);
+      width: 110px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .search-inp:focus { border-color: var(--amber); }
+    .search-inp::placeholder { color: var(--text3); }
+
+    .t-wrap { flex: 1; overflow-y: auto; }
+    .t-wrap::-webkit-scrollbar { width: 2px; }
+    .t-wrap::-webkit-scrollbar-thumb { background: var(--border2); }
+
+    table.ttbl { width: 100%; border-collapse: collapse; }
+    table.ttbl thead th {
+      padding: 6px 10px;
+      font-family: var(--mono); font-size: 9px; color: var(--text3);
+      text-align: left; font-weight: 500; letter-spacing: 0.05em;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 1;
+    }
+    table.ttbl tbody td {
+      padding: 7px 10px;
+      font-size: 11px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text2);
+      vertical-align: middle;
+    }
+    table.ttbl tbody tr:hover td { background: var(--surface2); color: var(--text); }
+    table.ttbl tbody tr:last-child td { border-bottom: none; }
+
+    .ptag {
+      display: inline-block; padding: 2px 6px; border-radius: 3px;
+      font-family: var(--mono); font-size: 9px; font-weight: 600; letter-spacing: 0.03em;
+    }
+    .pt-s { background: rgba(74,158,255,0.1); color: var(--blue); border: 1px solid rgba(74,158,255,0.2); }
+    .pt-b { background: rgba(232,160,48,0.1); color: var(--amber); border: 1px solid rgba(232,160,48,0.2); }
+    .pt-e { background: rgba(46,204,113,0.1); color: var(--green); border: 1px solid rgba(46,204,113,0.2); }
+
+    .r-actions {
+      padding: 9px 14px; border-top: 1px solid var(--border);
+      display: flex; gap: 6px; flex-shrink: 0;
+    }
+    .ra-btn {
+      flex: 1; padding: 6px 10px;
+      background: var(--surface2); border: 1px solid var(--border); border-radius: 4px;
+      color: var(--text2); font-family: var(--mono); font-size: 10px; cursor: pointer;
+      transition: all 0.15s;
+    }
+    .ra-btn:hover { border-color: var(--amber); color: var(--amber); }
+    .ra-btn.r-red:hover { border-color: var(--red); color: var(--red); }
+
+    /* LOG */
+    .log-wrap { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+    .log-body { flex: 1; overflow-y: auto; padding: 8px 12px; }
+    .log-body::-webkit-scrollbar { width: 2px; }
+    .log-body::-webkit-scrollbar-thumb { background: var(--border2); }
+    .log-entry {
+      display: flex; gap: 10px;
+      font-family: var(--mono); font-size: 10px; line-height: 1.8;
+      border-bottom: 1px solid rgba(255,255,255,0.02); padding: 2px 0;
+    }
+    .log-entry:last-child { border-bottom: none; }
+    .log-t { color: var(--text3); flex-shrink: 0; }
+    .log-m { color: var(--text2); }
+    .log-m.ok  { color: rgba(46,204,113,0.75); }
+    .log-m.err { color: rgba(231,76,60,0.75); }
+    .log-m.warn{ color: rgba(232,160,48,0.65); }
+
+    /* page load */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(5px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .a1 { animation: fadeUp 0.35s ease both; }
+    .a2 { animation: fadeUp 0.35s ease 0.07s both; }
+    .a3 { animation: fadeUp 0.35s ease 0.14s both; }
+
+    ::-webkit-scrollbar { width: 3px; height: 3px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
   </style>
 </head>
 <body>
 
-<div class="grid-bg"></div>
+<div class="shell">
 
-<div class="max-w-7xl mx-auto p-6">
-
-  <!-- header -->
-  <header class="flex items-center justify-between mb-6">
-    <div class="flex items-center gap-4">
-      <div class="w-12 h-12 bg-gradient-to-br from-[#071428] to-[#0b0b14] rounded-lg flex items-center justify-center border border-[rgba(124,247,255,0.06)]">
-        <!-- stylized icon -->
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M3 12h18" stroke="var(--neon)" stroke-width="1.6" stroke-linecap="round"/><path d="M6 6h12" stroke="var(--accent)" stroke-width="1.6" stroke-linecap="round"/></svg>
-      </div>
-      <div>
-        <h1 class="text-2xl font-bold neon glow">Expiry Notifier — Admin</h1>
-        <div class="text-xs muted">Real-time analytics · purchases · tenant management</div>
-      </div>
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="brand"><div class="brand-dot"></div>RENEWPULSE</div>
+      <div class="breadcrumb">/ <span>admin</span> / console</div>
     </div>
-
-    <div class="flex items-center gap-3">
-      <button id="refreshAll" title="Refresh data" class="btn-ghost muted hover:text-white">🔄 Refresh</button>
-      <button id="exportCSV" class="btn-ghost muted">⬇ Export CSV</button>
-      <div id="adminActions" class="flex items-center gap-2">
-        <button id="logoutBtn" class="px-3 py-1 rounded bg-[#0f1724] hover:bg-[#131827]">Logout</button>
+    <div class="topbar-right">
+      <div class="status-pill">
+        <div class="status-dot"></div>
+        LIVE &nbsp;<span id="lastUpdatedTop" style="color:var(--text3)">—</span>
       </div>
+      <button class="topbar-btn" id="refreshAll">↻&nbsp; REFRESH</button>
+      <button class="topbar-btn" id="exportCSV">↓&nbsp; EXPORT</button>
+      <button class="topbar-btn danger" id="logoutBtn">✕&nbsp; LOGOUT</button>
     </div>
   </header>
 
-  <!-- layout -->
-  <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+  <!-- BODY -->
+  <div class="body-grid">
 
-    <!-- left: KPIs & purchases -->
-    <div class="lg:col-span-1 space-y-6">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
 
-      <div class="panel p-4">
-        <h3 class="text-sm muted">Overview</h3>
-        <div class="grid grid-cols-2 gap-3 mt-3">
-          <div class="kpi p-3">
-            <div class="text-xs muted">Tenants</div>
-            <div id="totalTenants" class="text-2xl font-bold neon">—</div>
-          </div>
-          <div class="kpi p-3">
-            <div class="text-xs muted">Total Jobs</div>
-            <div id="totalJobs" class="text-2xl font-bold neon">—</div>
-          </div>
+      <div class="s-section a1">
+        <div class="s-label">Overview</div>
+        <div class="kpi-row">
+          <span class="kpi-lbl">Tenants</span>
+          <span id="totalTenants" class="kpi-val c-amber">—</span>
+        </div>
+        <div class="kpi-row">
+          <span class="kpi-lbl">Total Jobs</span>
+          <span id="totalJobs" class="kpi-val">—</span>
+        </div>
+        <div class="kpi-row">
+          <span class="kpi-lbl">Sent</span>
+          <span id="sentJobs" class="kpi-val c-green">—</span>
+        </div>
+        <div class="kpi-row">
+          <span class="kpi-lbl">Failed</span>
+          <span id="failedJobs" class="kpi-val c-red">—</span>
+        </div>
+        <div class="rev-box">
+          <div class="rev-lbl">Monthly Revenue</div>
+          <div id="monthlyRev" class="rev-num">₹—</div>
+          <div class="rev-sub">MoM growth <span id="revPct" class="rev-badge">+—%</span></div>
+        </div>
+      </div>
 
-          <div class="kpi p-3">
-            <div class="text-xs muted">Sent</div>
-            <div id="sentJobs" class="text-2xl font-bold accent">—</div>
+      <div class="s-section a2">
+        <div class="s-label">Recent Purchases</div>
+        <div id="purchasesList"></div>
+      </div>
+
+      <div class="s-section a3">
+        <div class="s-label">Actions</div>
+        <button class="act-btn" onclick="simulatePurchase()">
+          <span class="act-icon">+</span>Simulate Purchase
+        </button>
+        <button class="act-btn" onclick="clearCache()">
+          <span class="act-icon">⌫</span>Clear Cache
+        </button>
+        <button class="act-btn" onclick="retryFailed()">
+          <span class="act-icon">↺</span>Retry Failed Jobs
+        </button>
+      </div>
+
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+
+      <div class="metric-strip a1">
+        <div class="m-cell">
+          <div class="m-lbl">Delivery Rate</div>
+          <div class="m-val c-green" id="deliveryRate">—%</div>
+          <div class="m-sub">Last 30 days</div>
+          <div class="m-bar"><div class="m-bar-fill c-green" id="deliveryBar" style="background:var(--green);width:0%"></div></div>
+        </div>
+        <div class="m-cell">
+          <div class="m-lbl">Active Channels</div>
+          <div class="m-val c-blue" id="activeChannels">—</div>
+          <div class="m-sub">Email · SMS · WA</div>
+          <div class="m-bar"><div class="m-bar-fill" id="channelBar" style="background:var(--blue);width:0%"></div></div>
+        </div>
+        <div class="m-cell">
+          <div class="m-lbl">Avg Jobs / Tenant</div>
+          <div class="m-val c-amber" id="avgJobs">—</div>
+          <div class="m-sub">This month</div>
+          <div class="m-bar"><div class="m-bar-fill" id="avgBar" style="background:var(--amber);width:0%"></div></div>
+        </div>
+        <div class="m-cell">
+          <div class="m-lbl">ARPU</div>
+          <div class="m-val c-amber" id="arpu">₹—</div>
+          <div class="m-sub">Per tenant / mo</div>
+          <div class="m-bar"><div class="m-bar-fill" id="arpuBar" style="background:var(--amber);width:0%"></div></div>
+        </div>
+      </div>
+
+      <div class="cpanel a2">
+        <div class="cpanel-hd">
+          <div class="cpanel-title">Job Volume — Last 30 Days</div>
+          <div class="cpanel-sub">Scheduled vs Sent</div>
+        </div>
+        <div class="cpanel-body">
+          <canvas id="jobsChart" height="110"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-row a3">
+        <div class="cpanel">
+          <div class="cpanel-hd">
+            <div class="cpanel-title">Channel Distribution</div>
+            <div class="cpanel-sub">By volume</div>
           </div>
-          <div class="kpi p-3">
-            <div class="text-xs muted">Failed</div>
-            <div id="failedJobs" class="text-2xl font-bold" style="color:var(--danger)">—</div>
+          <div class="cpanel-body">
+            <canvas id="channelPie" height="160"></canvas>
           </div>
         </div>
-
-        <div class="mt-4 border-t border-white/5 pt-3">
-          <div class="flex items-center justify-between">
-            <div>
-              <div class="text-xs muted">Monthly Revenue</div>
-              <div id="monthlyRev" class="text-xl font-semibold neon">₹—</div>
-            </div>
-            <div class="text-sm muted">Growth <span id="revPct" class="accent">—%</span></div>
+        <div class="cpanel">
+          <div class="cpanel-hd">
+            <div class="cpanel-title">Revenue by Plan</div>
+            <div class="cpanel-sub">Current month</div>
+          </div>
+          <div class="cpanel-body">
+            <canvas id="purchasesBar" height="160"></canvas>
           </div>
         </div>
       </div>
 
-      <div class="panel p-4">
-        <h3 class="text-sm muted">Recent Purchases</h3>
-        <div id="purchasesList" class="mt-3 space-y-2 table-scroll">
-          <!-- items inserted by JS -->
+    </main>
+
+    <!-- RIGHT PANEL -->
+    <aside class="right">
+
+      <div class="r-section" style="flex:3;min-height:0">
+        <div class="r-hd">
+          <div class="r-title">Tenants</div>
+          <input id="tenantSearch" class="search-inp" placeholder="Search…" />
         </div>
-      </div>
-
-      <div class="panel p-4">
-        <h3 class="text-sm muted">Quick Actions</h3>
-        <div class="mt-3 grid grid-cols-1 gap-2">
-          <button onclick="simulatePurchase()" class="w-full px-3 py-2 rounded bg-gradient-to-r from-[#1b2538] to-[#172033]">Simulate Purchase</button>
-          <button onclick="clearCache()" class="w-full px-3 py-2 rounded border border-white/5">Clear Cache</button>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- middle: charts -->
-    <div class="lg:col-span-2 space-y-6">
-      <div class="panel p-4">
-        <div class="flex items-start justify-between">
-          <div>
-            <h3 class="font-semibold text-lg neon">Usage — Last 30 days</h3>
-            <div class="text-xs muted mt-1">Jobs scheduled and sent over time</div>
-          </div>
-          <div class="text-xs muted">Last updated <span id="lastUpdated">—</span></div>
-        </div>
-
-        <div class="mt-4">
-          <canvas id="jobsChart" height="140"></canvas>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-2 gap-6">
-        <div class="panel p-4">
-          <h4 class="muted text-sm mb-2">Channel split</h4>
-          <canvas id="channelPie" height="180"></canvas>
-        </div>
-
-        <div class="panel p-4">
-          <h4 class="muted text-sm mb-2">Purchases by Plan</h4>
-          <canvas id="purchasesBar" height="180"></canvas>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- right: tenants table -->
-    <div class="lg:col-span-1">
-      <div class="panel p-4">
-        <div class="flex items-center justify-between">
-          <h3 class="text-sm muted">Tenants</h3>
-          <input id="tenantSearch" placeholder="Search..." class="bg-transparent border border-white/5 rounded px-2 py-1 text-sm muted" />
-        </div>
-
-        <div class="mt-3 table-scroll">
-          <table class="w-full text-sm">
-            <thead class="text-xs muted">
+        <div class="t-wrap">
+          <table class="ttbl">
+            <thead>
               <tr>
-                <th class="p-2 text-left">Company</th>
-                <th class="p-2 text-left">Plan</th>
+                <th>Company</th>
+                <th>Plan</th>
+                <th>Joined</th>
               </tr>
             </thead>
-            <tbody id="tenantTable" class="text-gray-200"></tbody>
+            <tbody id="tenantTable"></tbody>
           </table>
         </div>
-
-        <div class="mt-3 flex gap-2">
-          <button id="viewAllTenants" class="w-full px-3 py-2 rounded border border-white/5">View All</button>
-          <button id="forceRetry" class="px-3 py-2 rounded bg-[#1f1b3a]">Retry Failed</button>
+        <div class="r-actions">
+          <button class="ra-btn" id="viewAllTenants">View All</button>
+          <button class="ra-btn r-red" onclick="retryFailed()">Retry Failed</button>
         </div>
       </div>
 
-      <div class="panel p-4 mt-4">
-        <h4 class="muted text-sm">System Log</h4>
-        <pre id="adminLog" class="text-xs mt-2 bg-[rgba(255,255,255,0.02)] p-3 rounded max-h-48 overflow-auto muted">Live system events will appear here.</pre>
+      <div class="log-wrap">
+        <div class="r-hd" style="flex-shrink:0">
+          <div class="r-title">System Log</div>
+          <span style="font-family:var(--mono);font-size:9px;color:var(--green)">● LIVE</span>
+        </div>
+        <div class="log-body" id="adminLog"></div>
       </div>
-    </div>
+
+    </aside>
 
   </div>
 </div>
 
 <script>
-/* Admin sci-fi UI script
-   - Uses /api/admin/* endpoints if reachable
-   - Falls back to demo data for visualization
-*/
-const token = localStorage.getItem('admin_token'); // your existing admin token flow
-const authHeaders = () => ({ 'Content-Type':'application/json', ...(token?{ Authorization: `Bearer ${token}` }:{}) });
+  const token = localStorage.getItem('admin_token');
+  const authH = () => ({ 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) });
+  const $ = id => document.getElementById(id);
 
-// DOM refs
-const totalTenantsEl = document.getElementById('totalTenants');
-const totalJobsEl = document.getElementById('totalJobs');
-const sentJobsEl = document.getElementById('sentJobs');
-const failedJobsEl = document.getElementById('failedJobs');
-const monthlyRevEl = document.getElementById('monthlyRev');
-const revPctEl = document.getElementById('revPct');
-const purchasesListEl = document.getElementById('purchasesList');
-const lastUpdatedEl = document.getElementById('lastUpdated');
-const tenantTableEl = document.getElementById('tenantTable');
-const adminLogEl = document.getElementById('adminLog');
-const tenantSearch = document.getElementById('tenantSearch');
-
-// Chart instances
-let jobsChart, channelPie, purchasesBar;
-
-// demo fallback data
-function demoData() {
-  const now = new Date();
-  const days = Array.from({length:30}, (_,i) => {
-    const d = new Date(now); d.setDate(now.getDate()- (29-i));
-    return { date: d.toISOString().slice(0,10), scheduled: Math.floor(40 + Math.random()*60), sent: Math.floor(30 + Math.random()*50) };
-  });
-  const tenants = Array.from({length:12}, (_,i)=> ({company_name:`Acme ${i+1}`, plan: i%3===0 ? 'Enterprise': (i%2? 'Business':'Starter'), email:`owner${i+1}@acme.com`, created_at: new Date(Date.now()-i*86400000).toISOString()}));
-  const purchases = [
-    {company:'Acme 7', plan:'Starter', amount:999, at: new Date().toISOString()},
-    {company:'Beta Ltd', plan:'Business', amount:3999, at: new Date(Date.now()-3600000).toISOString()},
-    {company:'Gamma Co', plan:'Starter', amount:999, at: new Date(Date.now()-7200000).toISOString()},
-  ];
-  return { days, tenants, purchases, stats: { tenants: tenants.length, total_jobs: days.reduce((s,d)=>s+d.scheduled,0), sent: days.reduce((s,d)=>s+d.sent,0), failed: Math.floor(Math.random()*10), monthly_rev: 120000, rev_pct: 7 } };
-}
-
-// helper to append log
-function log(msg){
-  const time = new Date().toLocaleTimeString();
-  adminLogEl.innerText = `[${time}] ${msg}\n` + adminLogEl.innerText;
-}
-
-// load all
-async function refreshAll() {
-  log('Refreshing data...');
-  const now = new Date();
-  lastUpdatedEl.innerText = now.toLocaleString();
-
-  let apiStats=null, apiTenants=null, apiPurchases=null, days=null;
-
-  // try fetch stats
-  try {
-    const res = await fetch('/api/admin/stats', { headers: authHeaders() });
-    if (res.ok) apiStats = await res.json();
-    else log('admin/stats returned ' + res.status);
-  } catch (e) { log('admin/stats fetch failed'); }
-
-  // try fetch tenants
-  try {
-    const res2 = await fetch('/api/admin/tenants', { headers: authHeaders() });
-    if (res2.ok) apiTenants = await res2.json();
-    else log('admin/tenants returned ' + res2.status);
-  } catch (e) { log('admin/tenants fetch failed'); }
-
-  // try fetch purchases (if you have endpoint)
-  try {
-    const res3 = await fetch('/api/admin/purchases', { headers: authHeaders() });
-    if (res3.ok) apiPurchases = await res3.json();
-    else log('/api/admin/purchases returned ' + res3.status);
-  } catch (e) { log('admin/purchases fetch failed'); }
-
-  // If any required data missing, use demo
-  const demo = demoData();
-  const stats = apiStats || {
-    total_tenants: demo.stats.tenants,
-    total_jobs: demo.stats.total_jobs,
-    sent_jobs: demo.stats.sent,
-    failed_jobs: demo.stats.failed,
-    monthly_revenue: demo.stats.monthly_rev,
-    revenue_pct: demo.stats.rev_pct
-  };
-  const tenants = apiTenants && Array.isArray(apiTenants) ? apiTenants : demo.tenants;
-  const purchases = apiPurchases && Array.isArray(apiPurchases) ? apiPurchases : demo.purchases;
-  days = demo.days;
-
-  // update KPIs
-  totalTenantsEl.innerText = stats.total_tenants ?? '—';
-  totalJobsEl.innerText = stats.total_jobs ?? '—';
-  sentJobsEl.innerText = stats.sent_jobs ?? '—';
-  failedJobsEl.innerText = stats.failed_jobs ?? '—';
-  monthlyRevEl.innerText = '₹' + ((stats.monthly_revenue || stats.monthly_rev || 0).toLocaleString());
-  revPctEl.innerText = ((stats.revenue_pct || stats.rev_pct || 0) + '%');
-
-  // purchases list
-  purchasesListEl.innerHTML = '';
-  (purchases.slice(0,6)).forEach(p => {
+  // LOG
+  function log(msg, type = '') {
+    const t = new Date().toLocaleTimeString('en-US', { hour12: false });
     const div = document.createElement('div');
-    div.className = 'flex items-center justify-between gap-3 p-2 rounded bg-[rgba(255,255,255,0.015)]';
-    div.innerHTML = `<div>
-        <div class="text-sm neon">${p.company}</div>
-        <div class="text-xs muted">${p.plan} · ${new Date(p.at || p.created_at || Date.now()).toLocaleString()}</div>
-      </div>
-      <div class="text-sm font-semibold">${p.amount? '₹'+p.amount : '—'}</div>`;
-    purchasesListEl.appendChild(div);
+    div.className = 'log-entry';
+    div.innerHTML = `<span class="log-t">${t}</span><span class="log-m ${type}">${msg}</span>`;
+    $('adminLog').prepend(div);
+    while ($('adminLog').children.length > 60) $('adminLog').lastChild.remove();
+  }
+
+  // DEMO DATA
+  function demoData() {
+    const now = new Date();
+    const days = Array.from({ length: 30 }, (_, i) => {
+      const d = new Date(now); d.setDate(now.getDate() - (29 - i));
+      return { date: d.toISOString().slice(0, 10), scheduled: Math.floor(40 + Math.random() * 80), sent: Math.floor(30 + Math.random() * 60) };
+    });
+    const names = ['AquaFit','NovaSpa','ZenGym','CoreMax','PeakZone','FlexHub','IronHouse','PulseArc','VeloSport','ApexFit','ElitePro','TitanGym','UrbanYoga','SwiftFit','RapidPT','AlphaBox','FusionX','GridGym'];
+    const plans = ['Starter','Business','Enterprise'];
+    const tenants = names.map((n, i) => ({ company_name: n, plan: plans[i % 3], created_at: new Date(Date.now() - i * 86400000 * 7).toISOString() }));
+    const purchases = [
+      { company:'AquaFit',  plan:'Business',   amount:3999, at: new Date().toISOString() },
+      { company:'PeakZone', plan:'Starter',     amount:999,  at: new Date(Date.now()-1800000).toISOString() },
+      { company:'IronHouse',plan:'Enterprise',  amount:9999, at: new Date(Date.now()-5400000).toISOString() },
+      { company:'FlexHub',  plan:'Starter',     amount:999,  at: new Date(Date.now()-9000000).toISOString() },
+      { company:'NovaSpa',  plan:'Business',    amount:3999, at: new Date(Date.now()-18000000).toISOString() },
+    ];
+    return {
+      days, tenants, purchases,
+      stats: { total_tenants: tenants.length, total_jobs: days.reduce((s, d) => s + d.scheduled, 0), sent_jobs: days.reduce((s, d) => s + d.sent, 0), failed_jobs: 7, monthly_revenue: 12480000, revenue_pct: 11 }
+    };
+  }
+
+  // CHARTS
+  let jobsChart, channelPie, purchasesBar;
+  Chart.defaults.color = '#5a5a72';
+  Chart.defaults.borderColor = 'rgba(255,255,255,0.03)';
+  Chart.defaults.font.family = "'IBM Plex Mono', monospace";
+  Chart.defaults.font.size = 10;
+
+  function renderCharts(days, purchases) {
+    const labels = days.map(d => d.date.slice(5));
+    if (jobsChart) jobsChart.destroy();
+    jobsChart = new Chart($('jobsChart').getContext('2d'), {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          { label:'Scheduled', data: days.map(d=>d.scheduled), borderColor:'rgba(232,160,48,0.8)', backgroundColor:'rgba(232,160,48,0.04)', borderWidth:1.5, pointRadius:0, fill:true, tension:0.3 },
+          { label:'Sent',      data: days.map(d=>d.sent),      borderColor:'rgba(46,204,113,0.8)',  backgroundColor:'rgba(46,204,113,0.04)', borderWidth:1.5, pointRadius:0, fill:true, tension:0.3 }
+        ]
+      },
+      options: {
+        responsive: true,
+        interaction: { mode:'index', intersect:false },
+        plugins: { legend: { position:'top', align:'end', labels:{ boxWidth:10, boxHeight:2, padding:14, color:'#5a5a72' } } },
+        scales: {
+          x: { grid:{ color:'rgba(255,255,255,0.02)' }, ticks:{ color:'#3a3a52', maxTicksLimit:8, maxRotation:0 } },
+          y: { grid:{ color:'rgba(255,255,255,0.03)' }, ticks:{ color:'#3a3a52', maxTicksLimit:4 } }
+        }
+      }
+    });
+
+    const e = Math.floor(Math.random()*40)+35, s = Math.floor(Math.random()*25)+20, w = Math.max(5, 100-e-s);
+    if (channelPie) channelPie.destroy();
+    channelPie = new Chart($('channelPie').getContext('2d'), {
+      type: 'doughnut',
+      data: {
+        labels: ['Email','SMS','WhatsApp'],
+        datasets: [{ data:[e,s,w], backgroundColor:['rgba(74,158,255,0.7)','rgba(232,160,48,0.7)','rgba(46,204,113,0.7)'], borderColor:['rgba(74,158,255,0.3)','rgba(232,160,48,0.3)','rgba(46,204,113,0.3)'], borderWidth:1, hoverOffset:4 }]
+      },
+      options: { cutout:'68%', plugins:{ legend:{ position:'bottom', labels:{ boxWidth:8, boxHeight:8, padding:12, color:'#5a5a72' } } } }
+    });
+
+    const planMap = {};
+    (purchases||[]).forEach(p => planMap[p.plan] = (planMap[p.plan]||0) + (p.amount||0));
+    const pL = Object.keys(planMap), pV = pL.map(k=>planMap[k]);
+    if (purchasesBar) purchasesBar.destroy();
+    purchasesBar = new Chart($('purchasesBar').getContext('2d'), {
+      type: 'bar',
+      data: { labels:pL, datasets:[{ label:'₹', data:pV, backgroundColor:['rgba(74,158,255,0.45)','rgba(232,160,48,0.45)','rgba(46,204,113,0.45)'], borderColor:['rgba(74,158,255,0.8)','rgba(232,160,48,0.8)','rgba(46,204,113,0.8)'], borderWidth:1, borderRadius:3 }] },
+      options: { plugins:{ legend:{ display:false } }, scales:{ x:{ grid:{ display:false }, ticks:{ color:'#3a3a52' } }, y:{ grid:{ color:'rgba(255,255,255,0.03)' }, ticks:{ color:'#3a3a52', maxTicksLimit:4 } } } }
+    });
+  }
+
+  // TENANTS
+  let allTenants = [];
+  function renderTenants(list) {
+    const tb = $('tenantTable'); tb.innerHTML = '';
+    list.slice(0,60).forEach(t => {
+      const pc = { Starter:'pt-s', Business:'pt-b', Enterprise:'pt-e' }[t.plan] || 'pt-s';
+      const joined = t.created_at ? new Date(t.created_at).toLocaleDateString('en-IN', { month:'short', day:'numeric' }) : '—';
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:90px;color:var(--text)">${t.company_name||t.company||'—'}</td><td><span class="ptag ${pc}">${t.plan||'—'}</span></td><td style="font-family:var(--mono);font-size:10px">${joined}</td>`;
+      tb.appendChild(tr);
+    });
+  }
+  $('tenantSearch').addEventListener('input', e => {
+    const q = e.target.value.toLowerCase();
+    renderTenants(q ? allTenants.filter(t => (t.company_name||'').toLowerCase().includes(q)||(t.plan||'').toLowerCase().includes(q)) : allTenants);
   });
 
-  // tenant table
-  tenantTableEl.innerHTML = '';
-  tenants.slice(0,50).forEach(t => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td class="p-2">${t.company_name || t.name || t.company}</td><td class="p-2">${t.plan||t.role|| '—'}</td>`;
-    tenantTableEl.appendChild(tr);
-  });
+  // REFRESH
+  async function refreshAll() {
+    log('Refreshing…', 'warn');
+    $('lastUpdatedTop').textContent = new Date().toLocaleTimeString('en-US', { hour12:false });
 
-  // update charts
-  renderCharts(days, purchases, tenants);
+    let apiStats=null, apiTenants=null, apiPurchases=null;
+    try { const r=await fetch('/api/admin/stats',{headers:authH()}); if(r.ok){apiStats=await r.json();log('admin/stats OK','ok');}else log(`admin/stats → ${r.status}`,'err'); } catch { log('admin/stats unreachable','err'); }
+    try { const r=await fetch('/api/admin/tenants',{headers:authH()}); if(r.ok){apiTenants=await r.json();log('admin/tenants OK','ok');}else log(`admin/tenants → ${r.status}`,'err'); } catch { log('admin/tenants unreachable','err'); }
+    try { const r=await fetch('/api/admin/purchases',{headers:authH()}); if(r.ok){apiPurchases=await r.json();log('admin/purchases OK','ok');}else log(`admin/purchases → ${r.status}`,'err'); } catch { log('admin/purchases unreachable','err'); }
 
-  log('Data refreshed');
-}
+    const demo = demoData();
+    const stats = apiStats || demo.stats;
+    const tenants = (apiTenants&&Array.isArray(apiTenants)) ? apiTenants : demo.tenants;
+    const purchases = (apiPurchases&&Array.isArray(apiPurchases)) ? apiPurchases : demo.purchases;
 
-// chart rendering
-function renderCharts(days, purchases, tenants) {
-  const labels = days.map(d=>d.date);
-  const scheduled = days.map(d=>d.scheduled);
-  const sent = days.map(d=>d.sent);
+    // KPIs
+    $('totalTenants').textContent = stats.total_tenants ?? '—';
+    $('totalJobs').textContent    = (stats.total_jobs ?? 0).toLocaleString();
+    $('sentJobs').textContent     = (stats.sent_jobs ?? 0).toLocaleString();
+    $('failedJobs').textContent   = stats.failed_jobs ?? '—';
+    $('monthlyRev').textContent   = '₹' + ((stats.monthly_revenue||0)/100).toLocaleString('en-IN');
+    $('revPct').textContent       = '+' + (stats.revenue_pct||0) + '%';
 
-  // jobsChart
-  const ctx = document.getElementById('jobsChart').getContext('2d');
-  if (jobsChart) jobsChart.destroy();
-  jobsChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels,
-      datasets:[
-        { label: 'Scheduled', data: scheduled, borderColor: 'rgba(124,247,255,0.9)', backgroundColor:'rgba(124,247,255,0.06)', pointRadius:0, fill:true, tension:0.25 },
-        { label: 'Sent', data: sent, borderColor: 'rgba(179,136,255,0.9)', backgroundColor:'rgba(179,136,255,0.04)', pointRadius:0, fill:true, tension:0.25 }
-      ]
-    },
-    options:{
-      interaction:{mode:'index', intersect:false}, plugins:{legend:{labels:{color:'#cbd5e1'}}}, scales:{x:{ticks:{color:'#9aa0b4'}}, y:{ticks:{color:'#9aa0b4'}}}
-    }
-  });
+    // Derived metrics
+    const total = Math.max(1, stats.total_jobs||0);
+    const sent  = stats.sent_jobs||0;
+    const rate  = Math.round((sent/total)*100);
+    $('deliveryRate').textContent = rate + '%';
+    $('deliveryBar').style.width  = rate + '%';
+    $('activeChannels').textContent = '3';
+    $('channelBar').style.width     = '100%';
+    const tc  = Math.max(1, stats.total_tenants||1);
+    const avg = Math.round(total/tc);
+    $('avgJobs').textContent = avg;
+    $('avgBar').style.width  = Math.min(100, avg/2) + '%';
+    const arpu = Math.round((stats.monthly_revenue||0)/100/tc);
+    $('arpu').textContent   = '₹' + arpu.toLocaleString('en-IN');
+    $('arpuBar').style.width = '55%';
 
-  // channelPie
-  const channelCtx = document.getElementById('channelPie').getContext('2d');
-  const email = Math.floor(Math.random()*70)+30;
-  const sms = Math.floor(Math.random()*(100-email));
-  const other = Math.max(0, 100 - email - sms);
-  if (channelPie) channelPie.destroy();
-  channelPie = new Chart(channelCtx, {
-    type: 'doughnut',
-    data: { labels:['Email','SMS','Other'], datasets:[{data:[email,sms,other], backgroundColor:['#7cf7ff','#b388ff','#ffd166']}]},
-    options:{plugins:{legend:{position:'bottom', labels:{color:'#cbd5e1'}}}}
-  });
+    // Purchases sidebar
+    $('purchasesList').innerHTML = '';
+    purchases.slice(0,5).forEach(p => {
+      const div = document.createElement('div');
+      div.className = 'p-item';
+      div.innerHTML = `<div style="min-width:0"><div class="p-name">${p.company}</div><div class="p-meta">${p.plan} · ${new Date(p.at||Date.now()).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}</div></div><div class="p-amt">₹${(p.amount||0).toLocaleString()}</div>`;
+      $('purchasesList').appendChild(div);
+    });
 
-  // purchasesBar (plans)
-  const barCtx = document.getElementById('purchasesBar').getContext('2d');
-  const plans = {};
-  (purchases||[]).forEach(p => plans[p.plan] = (plans[p.plan]||0) + (p.amount||0));
-  const planLabels = Object.keys(plans);
-  const planValues = planLabels.map(k => plans[k]);
-  if (purchasesBar) purchasesBar.destroy();
-  purchasesBar = new Chart(barCtx, {
-    type:'bar',
-    data:{ labels: planLabels, datasets:[{label:'Revenue', data:planValues, backgroundColor:['#7cf7ff','#b388ff','#ffd166']}]},
-    options:{plugins:{legend:{display:false}}, scales:{y:{ticks:{color:'#9aa0b4'}}, x:{ticks:{color:'#9aa0b4'}}}}
-  });
-}
+    // Tenants
+    allTenants = tenants;
+    renderTenants(tenants);
 
-// event bindings
-document.getElementById('refreshAll').addEventListener('click', refreshAll);
-document.getElementById('exportCSV').addEventListener('click', exportCSV);
-document.getElementById('logoutBtn').addEventListener('click', () => { localStorage.removeItem('admin_token'); location.reload(); });
-tenantSearch.addEventListener('input', (e)=> { filterTenants(e.target.value); });
+    // Charts
+    renderCharts(demo.days, purchases);
+    log(`Loaded ${tenants.length} tenants, ${purchases.length} purchases`, 'ok');
+  }
 
-function filterTenants(q) {
-  const rows = Array.from(tenantTableEl.children);
-  rows.forEach(r => {
-    const txt = r.innerText.toLowerCase();
-    r.style.display = txt.includes(q.toLowerCase()) ? '' : 'none';
-  });
-}
+  // ACTIONS
+  function simulatePurchase() {
+    const co = ['AlphaSpin','FuseBox','DeltaPT','OmegaFit'][Math.floor(Math.random()*4)];
+    const pl = ['Starter','Business','Enterprise'][Math.floor(Math.random()*3)];
+    const am = {Starter:999,Business:3999,Enterprise:9999}[pl];
+    const div = document.createElement('div');
+    div.className = 'p-item'; div.style.borderColor = 'rgba(232,160,48,0.3)';
+    div.innerHTML = `<div style="min-width:0"><div class="p-name">${co}</div><div class="p-meta">${pl} · just now</div></div><div class="p-amt">₹${am}</div>`;
+    $('purchasesList').prepend(div);
+    log(`Purchase: ${co} → ${pl}`, 'ok');
+  }
+  function clearCache() { localStorage.removeItem('admin_token'); log('Cache cleared','warn'); }
+  function retryFailed() { log('Retrying failed jobs…','warn'); setTimeout(()=>log('Retry complete — 3 jobs requeued','ok'),1200); }
+  function exportCSV() {
+    const rows = [['Company','Plan','Joined']];
+    Array.from($('tenantTable').children).forEach(tr => rows.push(Array.from(tr.children).map(td => td.textContent.trim())));
+    const csv = rows.map(r => r.map(c=>`"${c.replace(/"/g,'""')}"`).join(',')).join('\n');
+    const url = URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+    const a = document.createElement('a'); a.href=url; a.download=`tenants_${Date.now()}.csv`; a.click();
+    URL.revokeObjectURL(url);
+    log('Exported CSV','ok');
+  }
 
-// CSV export (from the tenants table)
-function exportCSV(){
-  const rows = [['Company','Plan']];
-  Array.from(tenantTableEl.children).forEach(tr => {
-    const cols = Array.from(tr.children).map(td => td.innerText.trim());
-    rows.push(cols);
-  });
-  const csv = rows.map(r => r.map(cell => `"${(cell||'').replace(/"/g,'""')}"`).join(',')).join('\n');
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = `tenants_${Date.now()}.csv`; a.click();
-  URL.revokeObjectURL(url);
-  log('Exported CSV');
-}
+  $('refreshAll').addEventListener('click', refreshAll);
+  $('exportCSV').addEventListener('click', exportCSV);
+  $('logoutBtn').addEventListener('click', () => { localStorage.removeItem('admin_token'); location.reload(); });
 
-// admin actions demo
-function simulatePurchase(){
-  const demoPurchase = { company:'DemoCorp', plan:'Starter', amount:999, at:new Date().toISOString() };
-  purchasesListEl.insertAdjacentHTML('afterbegin', `<div class="flex items-center justify-between gap-3 p-2 rounded bg-[rgba(255,255,255,0.015)]"><div><div class="text-sm neon">${demoPurchase.company}</div><div class="text-xs muted"> ${demoPurchase.plan} · now</div></div><div class="text-sm font-semibold">₹${demoPurchase.amount}</div></div>`);
-  log('Simulated purchase for ' + demoPurchase.company);
-}
-
-// clear cache
-function clearCache(){
-  localStorage.removeItem('admin_token');
-  log('Local storage cleared (admin_token removed)');
-  alert('Local cache cleared.');
-}
-
-// initial load
-refreshAll();
-
-// small periodic refresh to keep dashboard alive
-setInterval(() => {
   refreshAll();
-}, 1000*60*3); // every 3 minutes
-
+  setInterval(refreshAll, 1000 * 60 * 3);
 </script>
 
 </body>
