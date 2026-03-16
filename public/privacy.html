@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Privacy Policy — RenewPulse</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#0a0b0f;--s1:#13141a;--border:#252733;--brand:#f5a623;--text:#f0f0f0;--muted:#8a8fa8;--r:12px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;line-height:1.8}
+nav{background:rgba(10,11,15,.9);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 2rem;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;color:var(--text);text-decoration:none;display:flex;align-items:center;gap:8px}
+.logo .dot{width:8px;height:8px;background:var(--brand);border-radius:50%}
+.back{color:var(--muted);text-decoration:none;font-size:.85rem;padding:6px 12px;border-radius:8px;border:1px solid var(--border);transition:all .2s}
+.back:hover{color:var(--text);border-color:var(--brand)}
+.wrap{max-width:780px;margin:0 auto;padding:3rem 2rem 5rem}
+.hero{margin-bottom:2.5rem}
+.hero h1{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;margin-bottom:.5rem}
+.hero p{color:var(--muted);font-size:.9rem}
+.card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:2rem;margin-bottom:1.5rem}
+h2{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;margin-bottom:.75rem;color:var(--brand)}
+p{margin-bottom:.75rem;color:#c8cad8}
+ul{padding-left:1.5rem;margin-bottom:.75rem;color:#c8cad8}
+ul li{margin-bottom:.4rem}
+.highlight{background:rgba(245,166,35,.07);border:1px solid rgba(245,166,35,.2);border-radius:8px;padding:1rem;margin-bottom:.75rem}
+.version{font-size:.78rem;color:var(--muted);margin-top:2rem;padding-top:1rem;border-top:1px solid var(--border)}
+</style>
+</head>
+<body>
+<nav>
+  <a href="/" class="logo"><span class="dot"></span> RenewPulse</a>
+  <a href="/" class="back">← Back to App</a>
+</nav>
+<div class="wrap">
+  <div class="hero">
+    <h1>Privacy Policy</h1>
+    <p>Last updated: January 1, 2025 &nbsp;·&nbsp; Version 1.0</p>
+  </div>
+
+  <div class="card">
+    <h2>Overview</h2>
+    <p>RenewPulse ("we", "our", "us") is committed to protecting the privacy of our customers and their end-users. This Privacy Policy describes how we collect, use, store, and protect personal data in connection with the RenewPulse platform.</p>
+    <div class="highlight">
+      <strong>GDPR &amp; DPDP Act 2023:</strong> If you are located in the EU/EEA or India, you have specific rights under applicable data protection law. See the "Your Rights" section below.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>1. Data We Collect</h2>
+    <p><strong>Account data (Tenants):</strong> Name, email address, password (hashed), company name, billing history, and usage records.</p>
+    <p><strong>Customer data (uploaded by you):</strong> Your customers' names, email addresses, phone numbers, and subscription expiry dates. We act as a data processor for this data — you remain the data controller.</p>
+    <p><strong>Usage &amp; technical data:</strong> IP addresses, browser type, API access logs, and error reports. This data is used to operate and improve the Service.</p>
+    <p><strong>Legal consent records:</strong> Timestamp, IP address, and version of Terms/Privacy Policy accepted at signup.</p>
+  </div>
+
+  <div class="card">
+    <h2>2. How We Use Your Data</h2>
+    <ul>
+      <li>To deliver the messaging service on your behalf</li>
+      <li>To track channel usage against your plan quota</li>
+      <li>To generate analytics and delivery reports</li>
+      <li>To send billing-related communications</li>
+      <li>To detect and prevent fraud or abuse</li>
+      <li>To comply with legal obligations</li>
+    </ul>
+    <p>We do <strong>not</strong> sell your data or your customers' data to any third party. We do not use customer data for advertising purposes.</p>
+  </div>
+
+  <div class="card">
+    <h2>3. Data Sub-processors</h2>
+    <p>To deliver the Service, we share data with the following trusted sub-processors:</p>
+    <ul>
+      <li><strong>SendGrid (Twilio)</strong> — Email delivery (customer email addresses)</li>
+      <li><strong>MSG91</strong> — SMS delivery (customer phone numbers)</li>
+      <li><strong>Gupshup</strong> — WhatsApp delivery (customer phone numbers)</li>
+      <li><strong>Neon / PostgreSQL</strong> — Database hosting (all tenant and customer data)</li>
+    </ul>
+    <p>Each sub-processor is contractually obligated to protect data under equivalent standards.</p>
+  </div>
+
+  <div class="card">
+    <h2>4. Data Retention</h2>
+    <p>We retain your account and customer data for as long as your account is active. If you delete your account, all associated data (customers, jobs, rules, billing history) is permanently and irreversibly deleted within 24 hours.</p>
+    <p>Audit logs may be retained for up to 90 days after account deletion for legal compliance purposes.</p>
+  </div>
+
+  <div class="card">
+    <h2>5. Security</h2>
+    <p>We implement industry-standard security measures including:</p>
+    <ul>
+      <li>Passwords hashed with bcrypt (cost factor 10)</li>
+      <li>JWT tokens with short expiry windows</li>
+      <li>TLS encryption for all data in transit</li>
+      <li>Database encryption at rest via our hosting provider</li>
+      <li>Row-level tenant isolation — tenants cannot access each other's data</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>6. Your Rights</h2>
+    <p>Under GDPR (EU) and the Digital Personal Data Protection Act 2023 (India), you have the right to:</p>
+    <ul>
+      <li><strong>Access:</strong> Export a full copy of your data via Dashboard → Team → Export My Data</li>
+      <li><strong>Rectification:</strong> Edit your data directly in the dashboard</li>
+      <li><strong>Erasure:</strong> Delete your account and all data via Dashboard → Team → Delete Account</li>
+      <li><strong>Portability:</strong> Data export is provided in machine-readable JSON format</li>
+      <li><strong>Withdraw consent:</strong> Contact us to update your consent preferences</li>
+    </ul>
+    <p>To exercise rights that cannot be self-served, email <a href="mailto:privacy@renewpulse.in" style="color:var(--brand)">privacy@renewpulse.in</a>. We will respond within 30 days.</p>
+  </div>
+
+  <div class="card">
+    <h2>7. Cookies</h2>
+    <p>RenewPulse does not use tracking cookies or third-party analytics. We use <code>localStorage</code> in your browser solely to store your authentication token and session preferences. No data is shared with advertising networks.</p>
+  </div>
+
+  <div class="card">
+    <h2>8. Children's Privacy</h2>
+    <p>The Service is intended for businesses and is not directed at individuals under 18. We do not knowingly collect personal data from minors.</p>
+  </div>
+
+  <div class="card">
+    <h2>9. Changes to This Policy</h2>
+    <p>We may update this Privacy Policy as the Service evolves. Material changes will be communicated by email or in-app notification at least 7 days before taking effect. The version number and "last updated" date will always reflect the current policy.</p>
+  </div>
+
+  <div class="card">
+    <h2>10. Contact</h2>
+    <p>Data Protection Officer: <a href="mailto:privacy@renewpulse.in" style="color:var(--brand)">privacy@renewpulse.in</a><br/>
+    For general questions: <a href="mailto:hello@renewpulse.in" style="color:var(--brand)">hello@renewpulse.in</a></p>
+  </div>
+
+  <div class="version">Privacy Policy v1.0 &nbsp;·&nbsp; RenewPulse &nbsp;·&nbsp; &copy; 2025</div>
+</div>
+</body>
+</html>

@@ -1,10 +1,31 @@
-// jobExecutorService.js
+// services/jobExecutorService.js
+// Tracks in-flight jobs so graceful shutdown can drain before exit.
+
 const { pool, markJobSent, markJobFailed, rescheduleJob, incrementChannelUsage } = require('../db');
-const { getChannelQuota, getEnabledChannels }  = require('../plans');
+const { getChannelQuota, getEnabledChannels } = require('../plans');
 const { sendNotification } = require('./notificationService');
+const { executor: log }    = require('./logger');
 
 const MAX_RETRIES = 3;
 
+// ── In-flight tracking ────────────────────────────────────────────────────────
+// Holds Promises of all currently processing jobs. Used by drain() below.
+const _inFlight = new Set();
+
+function _track(promise) {
+  _inFlight.add(promise);
+  promise.finally(() => _inFlight.delete(promise));
+}
+
+// Wait for all in-flight jobs to finish. Called during graceful shutdown.
+async function drain() {
+  if (_inFlight.size === 0) return;
+  log.info({ count: _inFlight.size }, 'Draining in-flight jobs before shutdown...');
+  await Promise.allSettled([..._inFlight]);
+  log.info('All in-flight jobs drained');
+}
+
+// ── Main executor ─────────────────────────────────────────────────────────────
 async function runJobExecutor() {
   const client = await pool.connect();
   let jobs = [];
@@ -12,6 +33,8 @@ async function runJobExecutor() {
   try {
     await client.query('BEGIN');
 
+    // Atomically claim up to 50 pending jobs — FOR UPDATE SKIP LOCKED ensures
+    // multiple instances never pick the same job.
     const result = await client.query(
       `UPDATE jobs SET status = 'queued'
        WHERE id IN (
@@ -24,14 +47,10 @@ async function runJobExecutor() {
        RETURNING id`
     );
 
-    const claimedIds = result.rows.map(r => r.id);
-    if (!claimedIds.length) {
-      await client.query('COMMIT');
-      client.release();
-      return;
-    }
+    const ids = result.rows.map(r => r.id);
+    if (!ids.length) { await client.query('COMMIT'); client.release(); return; }
 
-    const jobsResult = await client.query(
+    const { rows } = await client.query(
       `SELECT j.*, c.email, c.phone, c.first_name, c.last_name, c.expiry_date,
               r.template, t.active_plans, t.name AS company_name
        FROM jobs j
@@ -39,65 +58,63 @@ async function runJobExecutor() {
        LEFT JOIN rules r     ON r.id = j.rule_id
        LEFT JOIN tenants t   ON t.id = j.tenant_id
        WHERE j.id = ANY($1::int[])`,
-      [claimedIds]
+      [ids]
     );
-
-    jobs = jobsResult.rows;
+    jobs = rows;
     await client.query('COMMIT');
   } catch (err) {
     await client.query('ROLLBACK');
-    console.error('🔥 Executor failed to claim jobs:', err.message);
+    log.error({ err }, 'Failed to claim jobs');
     client.release();
     return;
   }
 
   client.release();
-  console.log(`🚚 Executor claimed ${jobs.length} job(s)`);
+  log.info({ count: jobs.length }, 'Jobs claimed');
 
   for (const job of jobs) {
-    // Check if tenant still has this channel enabled
-    const activePlans     = job.active_plans || [];
-    const enabledChannels = getEnabledChannels(activePlans);
-    const quota           = getChannelQuota(activePlans, job.channel);
+    const promise = _processJob(job);
+    _track(promise);
+  }
+}
 
-    if (!enabledChannels.includes(job.channel)) {
-      console.log(`⚠ Job ${job.id} skipped — tenant channel '${job.channel}' not in active plans`);
-      await markJobFailed(job.id, `Channel '${job.channel}' not enabled on tenant plan`);
-      continue;
-    }
+async function _processJob(job) {
+  const activePlans     = job.active_plans || [];
+  const enabledChannels = getEnabledChannels(activePlans);
+  const quota           = getChannelQuota(activePlans, job.channel);
 
-    console.log(`➡ Processing job ${job.id} (${job.channel}) → ${job.email || job.phone || job.recipient}`);
+  if (!enabledChannels.includes(job.channel)) {
+    log.warn({ job_id: job.id, channel: job.channel }, 'Channel not enabled on plan — failing job');
+    await markJobFailed(job.id, `Channel '${job.channel}' not enabled on tenant plan`);
+    return;
+  }
 
-    try {
-      // Merge recipient from jobs table if customer join returned null
-      const enrichedJob = {
-        ...job,
-        email: job.email || (job.channel === 'email' ? job.recipient : null),
-        phone: job.phone || (['sms','whatsapp'].includes(job.channel) ? job.recipient : null)
-      };
+  const enriched = {
+    ...job,
+    email: job.email || (job.channel === 'email' ? job.recipient : null),
+    phone: job.phone || (['sms','whatsapp'].includes(job.channel) ? job.recipient : null)
+  };
 
-      const providerMsgId = await sendNotification(enrichedJob);
-      await markJobSent(job.id, providerMsgId);
+  log.info({ job_id: job.id, channel: job.channel, recipient: enriched.email || enriched.phone }, 'Processing job');
 
-      // Track channel usage
-      await incrementChannelUsage(job.tenant_id, job.channel, quota);
+  try {
+    const providerMsgId = await sendNotification(enriched);
+    await markJobSent(job.id, providerMsgId);
+    await incrementChannelUsage(job.tenant_id, job.channel, quota);
+    log.info({ job_id: job.id, provider_msg_id: providerMsgId }, 'Job sent');
+  } catch (err) {
+    const retries = job.retry_count || 0;
+    log.error({ err, job_id: job.id, retry: retries }, 'Job failed');
 
-      console.log(`✅ Job ${job.id} sent via ${job.channel} (provider id: ${providerMsgId})`);
-    } catch (err) {
-      const retries = job.retry_count || 0;
-      console.error(`❌ Job ${job.id} failed (retry ${retries}):`, err.message);
-
-      if (retries < MAX_RETRIES) {
-        const nextRetry    = retries + 1;
-        const delayMinutes = Math.pow(2, nextRetry); // 2, 4, 8 mins
-        await rescheduleJob(job.id, delayMinutes, err.message);
-        console.log(`🔁 Job ${job.id} rescheduled in ${delayMinutes}m (retry ${nextRetry})`);
-      } else {
-        await markJobFailed(job.id, err.message);
-        console.log(`🛑 Job ${job.id} permanently failed after ${retries} retries`);
-      }
+    if (retries < MAX_RETRIES) {
+      const delay = Math.pow(2, retries + 1); // 2, 4, 8 min
+      await rescheduleJob(job.id, delay, err.message);
+      log.info({ job_id: job.id, delay_minutes: delay, next_retry: retries + 1 }, 'Job rescheduled');
+    } else {
+      await markJobFailed(job.id, err.message);
+      log.warn({ job_id: job.id }, 'Job permanently failed after max retries');
     }
   }
 }
 
-module.exports = { runJobExecutor };
+module.exports = { runJobExecutor, drain };

@@ -7,699 +7,933 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
 <style>
-:root {
-  --bg:#0a0b0f;
-  --surface:#13141a;
-  --surface2:#1c1e27;
-  --border:#252733;
-  --brand:#f5a623;
-  --brand2:#ff6b35;
-  --green:#22c55e;
-  --red:#ef4444;
-  --blue:#3b82f6;
-  --purple:#a855f7;
-  --text:#f0f0f0;
-  --muted:#8a8fa8;
-  --radius:12px;
+:root{
+  --bg:#0a0b0f; --s1:#13141a; --s2:#1c1e27; --border:#252733;
+  --brand:#f5a623; --green:#22c55e; --red:#ef4444; --blue:#3b82f6; --purple:#a855f7;
+  --text:#f5f5f7; --muted:#a8adc4; --r:12px;
+  --fs-base:16.5px; --fs-sm:14px; --fs-xs:13px; --fs-label:12px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden}
-h1,h2,h3,h4{font-family:'Syne',sans-serif}
+html{font-size:var(--fs-base)}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden;line-height:1.85;-webkit-font-smoothing:antialiased;font-weight:400;font-size:var(--fs-base)}
+h1,h2,h3,h4{font-family:'Syne',sans-serif;line-height:1.5}
+a{color:var(--brand);text-decoration:none}
+a:hover{text-decoration:underline}
+code{background:var(--s2);padding:3px 7px;border-radius:5px;font-size:.88em;letter-spacing:.01em}
+p{line-height:1.9}
 
-/* ── Login Screen ── */
-#loginScreen{
-  position:fixed;inset:0;z-index:100;
-  display:flex;align-items:center;justify-content:center;
-  background:var(--bg);padding:1rem;
-}
-.login-box{
-  width:100%;max-width:420px;padding:2.5rem;
-  background:var(--surface);border:1px solid var(--border);border-radius:20px;
-  position:relative;overflow:hidden;
-}
-.login-box::before{
-  content:'';position:absolute;top:-80px;right:-80px;
-  width:200px;height:200px;border-radius:50%;
-  background:radial-gradient(circle,rgba(245,166,35,0.15),transparent 70%);
-  pointer-events:none;
-}
-.logo-mark{
-  display:flex;align-items:center;gap:10px;margin-bottom:1.5rem;
-}
-.logo-mark .icon{
-  width:40px;height:40px;background:var(--brand);border-radius:10px;
-  display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;
-}
-.logo-mark h1{font-size:1.4rem;font-weight:800;letter-spacing:-0.5px;line-height:1.2}
+/* ── Auth screen ── */
+#authScreen{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:1.5rem}
+.auth-box{width:100%;max-width:460px;padding:2.75rem;background:var(--s1);border:1px solid var(--border);border-radius:20px;position:relative;overflow:hidden}
+.auth-box::before{content:'';position:absolute;top:-80px;right:-80px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(245,166,35,.15),transparent 70%);pointer-events:none}
+.logo-mark{display:flex;align-items:center;gap:12px;margin-bottom:1.75rem}
+.logo-mark .icon{width:44px;height:44px;background:var(--brand);border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.logo-mark h1{font-size:1.5rem;font-weight:800;letter-spacing:-.5px;line-height:1.2}
 .logo-mark span{color:var(--brand)}
-
-.input-group{margin-bottom:1rem}
-.input-group label{display:block;font-size:0.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px}
-.input-group input{
-  width:100%;padding:0.75rem 1rem;background:var(--surface2);
-  border:1px solid var(--border);border-radius:var(--radius);
-  color:var(--text);font-size:0.95rem;font-family:'DM Sans',sans-serif;
-  transition:border-color 0.2s;
-}
+.auth-tabs{display:flex;gap:4px;background:var(--s2);border-radius:9px;padding:4px;margin-bottom:1.75rem}
+.auth-tab{flex:1;text-align:center;padding:11px;border-radius:7px;cursor:pointer;font-size:.975rem;border:none;background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;transition:all .2s;font-weight:500;line-height:1.8}
+.auth-tab.active{background:var(--s1);color:var(--text);font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.input-group{margin-bottom:1.2rem}
+.input-group label{display:block;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;font-weight:700}
+.input-group input{width:100%;padding:.9rem 1.1rem;background:var(--s2);border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-size:1rem;font-family:'DM Sans',sans-serif;transition:border-color .2s;line-height:1.8}
 .input-group input:focus{outline:none;border-color:var(--brand)}
+.tos-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:1.2rem;font-size:.925rem;color:var(--muted);line-height:1.85}
+.tos-row input{margin-top:4px;accent-color:var(--brand);flex-shrink:0;width:15px;height:15px}
+.btn{width:100%;padding:.9rem;border:none;border-radius:var(--r);font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;cursor:pointer;transition:opacity .2s,transform .1s;letter-spacing:.01em}
+.btn:active{transform:scale(.98)}.btn-primary{background:var(--brand);color:#000}.btn:hover{opacity:.9}
+#authMsg{font-size:.925rem;margin-top:1rem;padding:.8rem 1rem;border-radius:9px;display:none;line-height:1.85}
+#authMsg.error{background:rgba(239,68,68,.1);color:#ef9999;border:1px solid rgba(239,68,68,.2)}
+#authMsg.success{background:rgba(34,197,94,.1);color:#86efac;border:1px solid rgba(34,197,94,.2)}
 
-.btn{
-  width:100%;padding:0.8rem;border:none;border-radius:var(--radius);
-  font-family:'Syne',sans-serif;font-weight:700;font-size:0.95rem;
-  cursor:pointer;transition:opacity 0.2s,transform 0.1s;
-}
-.btn:active{transform:scale(0.98)}
-.btn-primary{background:var(--brand);color:#000}
-.btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
-.btn:hover{opacity:0.9}
-.btn-row{display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;margin-bottom:1rem}
-
-#authMsg{font-size:0.85rem;margin-top:0.75rem;padding:0.6rem 0.8rem;border-radius:8px;display:none;line-height:1.4}
-#authMsg.error{background:rgba(239,68,68,0.1);color:#ef9999;border:1px solid rgba(239,68,68,0.2)}
-#authMsg.success{background:rgba(34,197,94,0.1);color:#86efac;border:1px solid rgba(34,197,94,0.2)}
-
-/* ── Dashboard ── */
+/* ── Shell ── */
 #dashboard{display:none;min-height:100vh}
-
-.topbar{
-  position:sticky;top:0;z-index:50;
-  background:rgba(10,11,15,0.85);backdrop-filter:blur(16px);
-  border-bottom:1px solid var(--border);
-  padding:0 2rem;height:64px;
-  display:flex;align-items:center;justify-content:space-between;
-  gap:1rem;
-}
-.topbar-logo{display:flex;align-items:center;gap:10px;font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;white-space:nowrap}
-.topbar-logo .dot{width:10px;height:10px;background:var(--brand);border-radius:50%;display:inline-block;margin-right:2px;flex-shrink:0}
-.topbar-right{display:flex;align-items:center;gap:0.75rem;min-width:0}
-.nav-link{color:var(--muted);text-decoration:none;font-size:0.88rem;padding:6px 12px;border-radius:8px;transition:all 0.2s;white-space:nowrap}
-.nav-link:hover,.nav-link.active{background:var(--surface2);color:var(--text)}
-.company-badge{background:var(--surface2);border:1px solid var(--border);padding:5px 12px;border-radius:20px;font-size:0.82rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px}
-.logout-btn{background:transparent;border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:8px;cursor:pointer;font-size:0.85rem;transition:all 0.2s;white-space:nowrap;flex-shrink:0}
+.topbar{position:sticky;top:0;z-index:50;background:rgba(10,11,15,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 2.5rem;height:68px;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.topbar-logo{display:flex;align-items:center;gap:10px;font-family:'Syne',sans-serif;font-size:1.15rem;font-weight:800;white-space:nowrap;letter-spacing:-.3px}
+.topbar-logo .dot{width:10px;height:10px;background:var(--brand);border-radius:50%;flex-shrink:0}
+.topbar-right{display:flex;align-items:center;gap:.6rem;min-width:0;flex-wrap:wrap}
+.nav-link{color:var(--muted);text-decoration:none;font-size:.95rem;padding:6px 12px;border-radius:8px;transition:all .2s;white-space:nowrap;font-weight:500}
+.nav-link:hover{background:var(--s2);color:var(--text)}
+.company-badge{background:var(--s2);border:1px solid var(--border);padding:6px 14px;border-radius:20px;font-size:.85rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px}
+.logout-btn{background:transparent;border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:8px;cursor:pointer;font-size:.875rem;transition:all .2s;flex-shrink:0;font-family:'DM Sans',sans-serif}
 .logout-btn:hover{border-color:var(--red);color:var(--red)}
+.main{max-width:1200px;margin:0 auto;padding:2.5rem 2rem}
 
-.main{max-width:1200px;margin:0 auto;padding:2rem}
+/* ── Quota alerts ── */
+#alertBanner{margin-bottom:1.75rem}
+.quota-alert{padding:.95rem 1.2rem;border-radius:var(--r);font-size:.975rem;margin-bottom:.6rem;display:flex;align-items:center;gap:.75rem;line-height:1.85}
+.quota-alert.warn{background:rgba(245,166,35,.1);border:1px solid rgba(245,166,35,.25);color:#fbbf24}
+.quota-alert.crit{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:#f87171}
 
-/* ── KPI Cards ── */
-.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:2rem}
-.kpi-card{
-  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
-  padding:1.2rem 1.4rem;position:relative;overflow:hidden;
-}
-.kpi-card .accent-bar{position:absolute;top:0;left:0;right:0;height:3px}
-.kpi-label{font-size:0.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px}
-.kpi-value{font-size:1.8rem;font-family:'Syne',sans-serif;font-weight:800;line-height:1}
-.kpi-sub{font-size:0.75rem;color:var(--muted);margin-top:4px}
+/* ── KPI strip ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1.1rem;margin-bottom:1.75rem}
+.kpi-card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:1.4rem 1.6rem;position:relative;overflow:hidden}
+.kpi-accent{position:absolute;top:0;left:0;right:0;height:3px;border-radius:var(--r) var(--r) 0 0}
+.kpi-label{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;font-weight:700}
+.kpi-val{font-family:'Syne',sans-serif;font-size:2.2rem;font-weight:800;line-height:1}
+.kpi-sub{font-size:13px;color:var(--muted);margin-top:6px;font-weight:500}
 
-/* ── Channel Status Pills ── */
-.channel-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:2rem}
-.channel-card{
-  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
-  padding:1.2rem 1.4rem;
-}
-.channel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.8rem}
-.channel-icon{font-size:1.5rem}
-.ch-badge{font-size:0.72rem;padding:3px 10px;border-radius:20px;font-weight:600}
-.ch-badge.active{background:rgba(34,197,94,0.15);color:var(--green);border:1px solid rgba(34,197,94,0.2)}
-.ch-badge.inactive{background:rgba(138,143,168,0.1);color:var(--muted);border:1px solid var(--border)}
-.ch-name{font-family:'Syne',sans-serif;font-weight:700;margin-bottom:4px}
-.ch-quota{font-size:0.82rem;color:var(--muted);margin-bottom:8px}
-.progress-bar{height:6px;background:var(--surface2);border-radius:99px;overflow:hidden}
-.progress-fill{height:100%;border-radius:99px;transition:width 0.6s ease}
-.upgrade-link{font-size:0.8rem;color:var(--brand);text-decoration:none;margin-top:8px;display:inline-block}
-.upgrade-link:hover{text-decoration:underline}
-
-/* ── Section card ── */
-.card{
-  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
-  padding:1.5rem;margin-bottom:1.5rem;
-}
-.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;flex-wrap:wrap;gap:0.5rem}
-.card-title{font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:700}
-.card-actions{display:flex;gap:0.5rem;flex-wrap:wrap}
+/* ── Channel cards ── */
+.ch-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.1rem;margin-bottom:1.75rem}
+.ch-card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:1.4rem}
+.ch-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.ch-icon{font-size:1.6rem}
+.ch-pill{font-size:.75rem;padding:4px 11px;border-radius:20px;font-weight:700;letter-spacing:.02em}
+.ch-pill.on{background:rgba(34,197,94,.15);color:var(--green);border:1px solid rgba(34,197,94,.2)}
+.ch-pill.warn{background:rgba(245,166,35,.15);color:var(--brand);border:1px solid rgba(245,166,35,.2)}
+.ch-pill.full{background:rgba(239,68,68,.15);color:var(--red);border:1px solid rgba(239,68,68,.2)}
+.ch-pill.off{background:rgba(138,143,168,.1);color:var(--muted);border:1px solid var(--border)}
+.ch-name{font-family:'Syne',sans-serif;font-weight:700;font-size:1.1rem;margin-bottom:6px}
+.ch-quota{font-size:.95rem;color:var(--muted);margin-bottom:10px;line-height:1.85;font-weight:500}
+.bar-track{height:7px;background:var(--s2);border-radius:99px;overflow:hidden}
+.bar-fill{height:100%;border-radius:99px;transition:width .7s ease}
+.ch-cta{font-size:.85rem;color:var(--brand);margin-top:10px;display:inline-block;font-weight:600}
 
 /* ── Tabs ── */
-.tabs{display:flex;gap:4px;background:var(--surface2);border-radius:10px;padding:4px;margin-bottom:1.5rem;flex-wrap:wrap}
-.tab{flex:1;text-align:center;padding:8px 12px;border-radius:8px;cursor:pointer;font-size:0.85rem;transition:all 0.2s;border:none;background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;white-space:nowrap;min-width:80px}
-.tab.active{background:var(--surface);color:var(--text);font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,0.3)}
+.tabs{display:flex;gap:3px;background:var(--s2);border-radius:11px;padding:5px;margin-bottom:1.75rem;flex-wrap:wrap}
+.tab-btn{flex:1;text-align:center;padding:10px 12px;border-radius:8px;cursor:pointer;font-size:.9rem;transition:all .2s;border:none;background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;white-space:nowrap;position:relative;min-width:64px;font-weight:500;line-height:1.8}
+.tab-btn.active{background:var(--s1);color:var(--text);font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.tab-badge{position:absolute;top:4px;right:5px;background:var(--red);color:#fff;font-size:.65rem;font-weight:700;min-width:17px;padding:2px 4px;border-radius:10px;text-align:center}
 
-/* ── Forms ── */
-.field{margin-bottom:1rem}
-.field label{display:block;font-size:0.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px}
-.field input,.field textarea,.field select{
-  width:100%;padding:0.7rem 1rem;background:var(--surface2);
-  border:1px solid var(--border);border-radius:var(--radius);
-  color:var(--text);font-size:0.9rem;font-family:'DM Sans',sans-serif;
-  transition:border-color 0.2s;
-}
+/* ── Card ── */
+.card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:1.75rem;margin-bottom:1.5rem}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.4rem;flex-wrap:wrap;gap:.6rem}
+.card-title{font-family:'Syne',sans-serif;font-size:1.15rem;font-weight:700;letter-spacing:-.2px}
+.card-actions{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center}
+
+/* ── Form elements ── */
+.field{margin-bottom:1.25rem}
+.field label{display:block;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;font-weight:700}
+.field input,.field textarea,.field select{width:100%;padding:.85rem 1.1rem;background:var(--s2);border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-size:1rem;font-family:'DM Sans',sans-serif;transition:border-color .2s;line-height:1.8}
 .field input:focus,.field textarea:focus,.field select:focus{outline:none;border-color:var(--brand)}
-.field select option{background:var(--surface2)}
-.field textarea{resize:vertical;min-height:100px;line-height:1.5}
-.field-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
-@media(max-width:600px){.field-row{grid-template-columns:1fr}}
-
-.inline-btn{
-  display:inline-flex;align-items:center;gap:6px;
-  padding:7px 14px;border-radius:8px;font-size:0.85rem;
-  cursor:pointer;border:none;transition:all 0.2s;font-family:'DM Sans',sans-serif;white-space:nowrap;
-}
-.inline-btn.primary{background:var(--brand);color:#000;font-weight:600}
-.inline-btn.secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
-.inline-btn.danger{background:rgba(239,68,68,0.1);color:var(--red);border:1px solid rgba(239,68,68,0.2)}
-.inline-btn:hover{opacity:0.85}
-
-/* ── Table ── */
-.table-wrap{overflow-x:auto;border-radius:var(--radius)}
-table{width:100%;border-collapse:collapse;font-size:0.88rem}
-thead tr{background:var(--surface2)}
-th{padding:10px 14px;text-align:left;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);font-weight:600;white-space:nowrap}
-td{padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
-tbody tr:last-child td{border-bottom:none}
-tbody tr:hover{background:rgba(255,255,255,0.02)}
-
-.status-pill{display:inline-block;padding:3px 10px;border-radius:20px;font-size:0.75rem;font-weight:600;white-space:nowrap}
-.status-pill.sent{background:rgba(34,197,94,0.15);color:var(--green)}
-.status-pill.pending{background:rgba(245,166,35,0.15);color:var(--brand)}
-.status-pill.failed{background:rgba(239,68,68,0.15);color:var(--red)}
-.status-pill.queued{background:rgba(59,130,246,0.15);color:var(--blue)}
+.field select option{background:var(--s2)}
+.field textarea{resize:vertical;min-height:100px;line-height:1.85}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem}
+@media(max-width:580px){.field-row{grid-template-columns:1fr}}
+.ibtn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:9px;font-size:.925rem;cursor:pointer;border:none;transition:all .2s;font-family:'DM Sans',sans-serif;white-space:nowrap;font-weight:500;line-height:1.8}
+.ibtn.primary{background:var(--brand);color:#000;font-weight:600}
+.ibtn.secondary{background:var(--s2);color:var(--text);border:1px solid var(--border)}
+.ibtn.danger{background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.2)}
+.ibtn.ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}
+.ibtn:hover{opacity:.85}
 
 /* ── Channel checkboxes ── */
-.ch-checks{display:flex;flex-wrap:wrap;gap:0.6rem;margin-top:6px}
-.ch-check{
-  display:flex;align-items:center;gap:6px;
-  padding:6px 14px;border-radius:8px;cursor:pointer;
-  border:1.5px solid var(--border);transition:all 0.2s;
-  font-size:0.88rem;background:var(--surface2);
-}
-.ch-check:has(input:checked){border-color:var(--brand);background:rgba(245,166,35,0.08);color:var(--brand)}
-.ch-check input{accent-color:var(--brand)}
+.ch-checks{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:6px}
+.ch-check{display:flex;align-items:center;gap:7px;padding:9px 15px;border-radius:9px;cursor:pointer;border:1.5px solid var(--border);background:var(--s2);font-size:.925rem;transition:all .2s;line-height:1.8}
+.ch-check:has(input:checked){border-color:var(--brand);background:rgba(245,166,35,.08);color:var(--brand)}
+.ch-check input{accent-color:var(--brand);width:14px;height:14px}
 
-/* ── Preview box ── */
-.preview-box{
-  background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);
-  padding:1rem;font-size:0.88rem;color:var(--text);min-height:80px;white-space:pre-wrap;line-height:1.6;
-  word-break:break-word;
-}
-
-/* ── Alerts ── */
-.alert{padding:0.75rem 1rem;border-radius:var(--radius);font-size:0.88rem;margin-bottom:1rem;display:none;line-height:1.4}
+/* ── Alert ── */
+.alert{padding:.9rem 1.1rem;border-radius:var(--r);font-size:.95rem;margin-top:.9rem;display:none;line-height:1.85}
 .alert.show{display:block}
-.alert.success{background:rgba(34,197,94,0.1);color:#86efac;border:1px solid rgba(34,197,94,0.2)}
-.alert.error{background:rgba(239,68,68,0.1);color:#ef9999;border:1px solid rgba(239,68,68,0.2)}
-.alert.info{background:rgba(59,130,246,0.1);color:#93c5fd;border:1px solid rgba(59,130,246,0.2)}
+.alert.ok{background:rgba(34,197,94,.1);color:#86efac;border:1px solid rgba(34,197,94,.2)}
+.alert.err{background:rgba(239,68,68,.1);color:#ef9999;border:1px solid rgba(239,68,68,.2)}
+.alert.info{background:rgba(59,130,246,.1);color:#93c5fd;border:1px solid rgba(59,130,246,.2)}
+
+/* ── Table ── */
+.tbl-wrap{overflow-x:auto;border-radius:var(--r)}
+table{width:100%;border-collapse:collapse;font-size:1rem}
+thead tr{background:var(--s2)}
+th{padding:14px 18px;text-align:left;font-size:12.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700;white-space:nowrap;line-height:1.8}
+td{padding:15px 18px;border-bottom:1px solid var(--border);vertical-align:middle;line-height:1.8;font-weight:400;color:var(--text)}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:rgba(255,255,255,.025)}
+.pill{display:inline-block;padding:4px 12px;border-radius:20px;font-size:.8rem;font-weight:700;white-space:nowrap;letter-spacing:.02em}
+.pill.sent,.pill.approved,.pill.delivered{background:rgba(34,197,94,.15);color:var(--green)}
+.pill.pending{background:rgba(245,166,35,.15);color:var(--brand)}
+.pill.failed,.pill.permanent_failed,.pill.rejected,.pill.bounced{background:rgba(239,68,68,.15);color:var(--red)}
+.pill.queued,.pill.opened{background:rgba(59,130,246,.15);color:var(--blue)}
+.pill.owner{background:rgba(168,85,247,.15);color:var(--purple)}
+.pill.member{background:rgba(138,143,168,.1);color:var(--muted)}
 
 /* ── Upload zone ── */
-.upload-zone{
-  border:2px dashed var(--border);border-radius:var(--radius);
-  padding:2rem;text-align:center;cursor:pointer;transition:border-color 0.2s;
-  margin-bottom:1rem;
-}
+.upload-zone{border:2px dashed var(--border);border-radius:var(--r);padding:2.5rem 2rem;text-align:center;cursor:pointer;transition:border-color .2s;margin-bottom:1.1rem}
 .upload-zone:hover{border-color:var(--brand)}
 .upload-zone input{display:none}
-.upload-zone .icon{font-size:2rem;margin-bottom:0.5rem}
-.upload-zone p{color:var(--muted);font-size:0.9rem;line-height:1.5}
-.upload-zone .file-name{color:var(--brand);font-size:0.85rem;margin-top:4px}
+.upload-zone .uz-icon{font-size:2.2rem;margin-bottom:.75rem}
+.upload-zone p{color:var(--muted);font-size:1rem;line-height:1.9;font-weight:500}
+.uz-name{color:var(--brand);font-size:.9rem;margin-top:6px;font-weight:600}
+
+/* ── Analytics bars ── */
+.chart-row{display:flex;align-items:center;gap:12px;font-size:.9rem;margin-bottom:10px}
+.chart-label{width:90px;color:var(--muted);text-align:right;flex-shrink:0;font-size:.875rem;line-height:1.8}
+.chart-bar-bg{flex:1;height:11px;background:var(--s2);border-radius:99px;overflow:hidden}
+.chart-bar-fill{height:100%;border-radius:99px;transition:width .7s ease}
+.chart-val{width:48px;color:var(--muted);text-align:right;flex-shrink:0;font-size:.875rem;font-weight:600;line-height:1.8}
+
+/* ── Template preview ── */
+.preview-box{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:1.2rem 1.3rem;font-size:.975rem;min-height:88px;white-space:pre-wrap;line-height:1.9;word-break:break-word;color:var(--text)}
+
+/* ── Modal ── */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:none;align-items:center;justify-content:center;padding:1.5rem}
+.modal-bg.open{display:flex}
+.modal{background:var(--s1);border:1px solid var(--border);border-radius:18px;padding:2.25rem;width:100%;max-width:460px;position:relative;max-height:90vh;overflow-y:auto}
+.modal-title{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;margin-bottom:1.4rem;letter-spacing:-.2px}
+.modal-close{position:absolute;top:1.1rem;right:1.1rem;background:var(--s2);border:1px solid var(--border);color:var(--muted);width:30px;height:30px;border-radius:7px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center}
 
 /* ── Empty state ── */
-.empty{text-align:center;padding:3rem;color:var(--muted)}
-.empty .big-icon{font-size:3rem;margin-bottom:1rem}
+.empty{text-align:center;padding:3.5rem 2rem;color:var(--muted);font-size:1rem;line-height:1.9;font-weight:500}
+.empty-icon{font-size:2.75rem;margin-bottom:1rem}
 
-/* ── Scrollbar ── */
-::-webkit-scrollbar{width:6px;height:6px}
-::-webkit-scrollbar-track{background:var(--surface)}
+@keyframes fade-up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fade-up{animation:fade-up .3s ease}
+
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--s1)}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 
-@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.fade-in{animation:fadeIn 0.3s ease}
-
-@media(max-width:600px){
-  .main{padding:1rem}
-  .topbar{padding:0 1rem}
+@media(max-width:768px){
+  .main{padding:1.5rem 1rem}
+  .topbar{padding:0 1.25rem;height:62px}
+  .tab-btn{font-size:.8rem;padding:8px 6px;min-width:52px}
+  .card{padding:1.25rem}
+  .kpi-val{font-size:1.75rem}
+}
+@media(max-width:480px){
   .tabs{gap:2px}
-  .tab{font-size:0.78rem;padding:7px 8px}
+  .tab-btn{font-size:.72rem;min-width:44px;padding:7px 4px}
+  .ibtn{font-size:.82rem;padding:7px 12px}
 }
 </style>
 </head>
 <body>
 
-<!-- ════════════════════ LOGIN ════════════════════ -->
-<div id="loginScreen">
-  <div class="login-box fade-in">
+<!-- ══════════════════════════════════════════════════════ AUTH -->
+<div id="authScreen">
+  <div class="auth-box fade-up">
     <div class="logo-mark">
       <div class="icon">🔔</div>
       <h1>Renew<span>Pulse</span></h1>
     </div>
-    <p style="color:var(--muted);font-size:0.9rem;margin-bottom:1.5rem;line-height:1.5">
-      Automated subscription reminders via WhatsApp, SMS &amp; Email
-    </p>
-
-    <div class="input-group" id="signupCompanyWrap">
-      <label>Company Name</label>
-      <input id="authCompany" placeholder="e.g. FitZone Gym"/>
-    </div>
-    <div class="input-group">
-      <label>Email</label>
-      <input id="authEmail" type="email" placeholder="you@company.com"/>
-    </div>
-    <div class="input-group">
-      <label>Password</label>
-      <input id="authPassword" type="password" placeholder="••••••••"/>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tabLogin"  onclick="switchTab('login')">Sign In</button>
+      <button class="auth-tab"        id="tabSignup" onclick="switchTab('signup')">Create Account</button>
     </div>
 
-    <div class="btn-row">
-      <button class="btn btn-secondary" onclick="handleLogin()">Login</button>
-      <button class="btn btn-primary" onclick="handleSignup()">Sign Up</button>
+    <!-- Login -->
+    <div id="loginFields">
+      <div class="input-group"><label>Email</label><input id="loginEmail" type="email" placeholder="you@company.com"/></div>
+      <div class="input-group"><label>Password</label><input id="loginPass" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+      <button class="btn btn-primary" onclick="doLogin()">Sign In →</button>
+    </div>
+
+    <!-- Signup -->
+    <div id="signupFields" style="display:none">
+      <div class="input-group"><label>Company Name</label><input id="signupCompany" placeholder="e.g. FitZone Gym"/></div>
+      <div class="input-group"><label>Email</label><input id="signupEmail" type="email" placeholder="you@company.com"/></div>
+      <div class="input-group"><label>Password</label><input id="signupPass" type="password" placeholder="min 8 characters"/></div>
+      <div class="tos-row">
+        <input type="checkbox" id="tosCheck"/>
+        <span>I agree to the <a href="/tos.html" target="_blank">Terms of Service</a> and <a href="/privacy.html" target="_blank">Privacy Policy</a></span>
+      </div>
+      <button class="btn btn-primary" onclick="doSignup()">Create Account →</button>
     </div>
 
     <div id="authMsg"></div>
   </div>
 </div>
 
-<!-- ════════════════════ DASHBOARD ════════════════════ -->
+<!-- ══════════════════════════════════════════════════════ DASHBOARD -->
 <div id="dashboard">
-
-  <!-- Top bar -->
   <nav class="topbar">
-    <div class="topbar-logo">
-      <span class="dot"></span> RenewPulse
-    </div>
+    <div class="topbar-logo"><span class="dot"></span> RenewPulse</div>
     <div class="topbar-right">
-      <a href="/home.html" class="nav-link">Pricing</a>
+      <a href="/home.html"   class="nav-link">Pricing</a>
       <a href="/tenant.html" class="nav-link">Billing</a>
+      <a href="/tos.html"    class="nav-link" target="_blank">Legal</a>
       <span class="company-badge" id="headerCompany"></span>
-      <button class="logout-btn" onclick="doLogout()">Logout</button>
+      <button class="logout-btn" onclick="doLogout()">Sign Out</button>
     </div>
   </nav>
 
   <div class="main">
 
-    <!-- KPI row -->
+    <!-- Quota alerts -->
+    <div id="alertBanner"></div>
+
+    <!-- KPIs -->
     <div class="kpi-grid" id="kpiGrid"></div>
 
-    <!-- Channel status -->
-    <div class="channel-grid" id="channelGrid"></div>
+    <!-- Channel cards -->
+    <div class="ch-grid" id="chGrid"></div>
 
-    <!-- Main tabs -->
+    <!-- Tabs -->
     <div class="tabs">
-      <button class="tab active" onclick="switchTab('members')">👥 Members</button>
-      <button class="tab" onclick="switchTab('rules')">⚡ Rules</button>
-      <button class="tab" onclick="switchTab('history')">📋 History</button>
-      <button class="tab" onclick="switchTab('test')">🧪 Test</button>
+      <button class="tab-btn active" onclick="showTab('members')">👥 Members</button>
+      <button class="tab-btn"        onclick="showTab('analytics')">📊 Analytics</button>
+      <button class="tab-btn"        onclick="showTab('rules')">⚡ Rules</button>
+      <button class="tab-btn"        onclick="showTab('history')">📋 History</button>
+      <button class="tab-btn"        id="dlqTabBtn" onclick="showTab('dlq')">⚠ DLQ</button>
+      <button class="tab-btn"        onclick="showTab('team')">👤 Team</button>
+      <button class="tab-btn"        onclick="showTab('audit')">🔍 Audit</button>
+      <button class="tab-btn"        onclick="showTab('test')">🧪 Test</button>
     </div>
 
-    <!-- ── Members Tab ── -->
-    <div id="tab-members" class="fade-in">
+    <!-- ── Members ───────────────────────────────────────────────────── -->
+    <div id="tab-members" class="fade-up">
       <div class="card">
         <div class="card-header">
-          <div class="card-title">Upload Members</div>
+          <div class="card-title">Upload Customer CSV</div>
+          <button class="ibtn secondary" onclick="dlCsv('/api/export/customers.csv','customers.csv')">⬇ Export CSV</button>
         </div>
-
-        <div class="upload-zone" id="dropzone" onclick="document.getElementById('csvFile').click()">
-          <input type="file" id="csvFile" accept=".csv" onchange="onFileSelected(this)"/>
-          <div class="icon">📂</div>
-          <p>Click to upload CSV or drag and drop</p>
-          <p style="font-size:0.78rem;margin-top:6px">
-            Required: <code>customer_id, expiry_date</code> &nbsp;·&nbsp;
-            Optional: <code>first_name, last_name, email, phone</code>
-          </p>
-          <div class="file-name" id="selectedFileName"></div>
+        <div class="upload-zone" onclick="document.getElementById('csvFile').click()">
+          <input type="file" id="csvFile" accept=".csv" onchange="onFilePick(this)"/>
+          <div class="uz-icon">📂</div>
+          <p>Click to select a CSV file<br/>
+          Required: <code>customer_id</code>, <code>expiry_date</code> &nbsp;·&nbsp; Optional: <code>first_name</code>, <code>last_name</code>, <code>email</code>, <code>phone</code></p>
+          <div class="uz-name" id="pickedFile"></div>
         </div>
-
-        <button class="inline-btn primary" onclick="uploadCSV()">⬆ Upload Members</button>
+        <button class="ibtn primary" onclick="doUpload()">⬆ Upload Members</button>
         <div class="alert" id="uploadAlert"></div>
       </div>
 
-      <!-- Members table -->
       <div class="card">
         <div class="card-header">
-          <div class="card-title">Upcoming Expiries (30 days)</div>
-          <button class="inline-btn secondary" onclick="loadExpiries()">↻ Refresh</button>
+          <div class="card-title">Upcoming Expiries <span style="font-weight:400;font-size:.85rem;color:var(--muted)">(next 30 days)</span></div>
+          <button class="ibtn secondary" onclick="loadExpiries()">↻ Refresh</button>
         </div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Name</th><th>Expiry Date</th><th>Days Left</th></tr></thead>
-            <tbody id="expiryTable"><tr><td colspan="3" style="text-align:center;color:var(--muted);padding:2rem">Loading...</td></tr></tbody>
-          </table>
-        </div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Name</th><th>Expiry Date</th><th>Days Left</th></tr></thead>
+          <tbody id="expiriesBody"><tr><td colspan="3" style="text-align:center;color:var(--muted);padding:2rem">Loading…</td></tr></tbody>
+        </table></div>
       </div>
     </div>
 
-    <!-- ── Rules Tab ── -->
-    <div id="tab-rules" class="fade-in" style="display:none">
+    <!-- ── Analytics ─────────────────────────────────────────────────── -->
+    <div id="tab-analytics" class="fade-up" style="display:none">
       <div class="card">
         <div class="card-header">
-          <div class="card-title">Create Automation Rule</div>
+          <div class="card-title">Delivery &amp; Open Rates</div>
+          <select id="monthsRange" onchange="loadAnalytics()" style="background:var(--s2);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:8px;font-size:.82rem">
+            <option value="3">Last 3 months</option>
+            <option value="6" selected>Last 6 months</option>
+            <option value="12">Last 12 months</option>
+          </select>
         </div>
+        <div id="deliveryRates"></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Monthly Send Volume</div></div>
+        <div id="monthlyTrend" style="overflow-x:auto"></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Expiry Urgency</div></div>
+        <div id="expiryBuckets"></div>
+      </div>
+    </div>
 
-        <div class="field">
-          <label>Rule Name</label>
-          <input id="ruleName" placeholder="e.g. 30-Day Expiry Reminder"/>
-        </div>
-
+    <!-- ── Rules ─────────────────────────────────────────────────────── -->
+    <div id="tab-rules" class="fade-up" style="display:none">
+      <div class="card">
+        <div class="card-header"><div class="card-title">New Automation Rule</div></div>
         <div class="field-row">
-          <div class="field">
-            <label>Send Before (days) — comma separated</label>
-            <input id="leadDays" value="30,7,1" placeholder="e.g. 30,7,1"/>
-          </div>
-          <div class="field">
-            <label>Channels</label>
-            <div class="ch-checks">
-              <label class="ch-check"><input type="checkbox" id="chEmail" value="email"/> 📧 Email</label>
-              <label class="ch-check"><input type="checkbox" id="chSMS" value="sms"/> 💬 SMS</label>
-              <label class="ch-check"><input type="checkbox" id="chWhatsApp" value="whatsapp"/> 💚 WhatsApp</label>
-            </div>
+          <div class="field"><label>Rule Name</label><input id="ruleName" placeholder="30-Day Expiry Reminder"/></div>
+          <div class="field"><label>Send X Days Before Expiry</label><input id="leadDays" value="30, 7, 1" placeholder="30, 7, 1"/></div>
+        </div>
+        <div class="field">
+          <label>Channels</label>
+          <div class="ch-checks">
+            <label class="ch-check"><input type="checkbox" value="email"/> 📧 Email</label>
+            <label class="ch-check"><input type="checkbox" value="sms"/> 💬 SMS</label>
+            <label class="ch-check"><input type="checkbox" value="whatsapp"/> 💚 WhatsApp</label>
           </div>
         </div>
-
         <div class="field">
           <label>Message Template</label>
-          <textarea id="template" placeholder="Hi {{first_name}}, your subscription expires on {{expiry_date}}. Please renew to continue!">Hi {{first_name}}, your subscription expires on {{expiry_date}}. Please renew to continue!</textarea>
-          <p style="font-size:0.78rem;color:var(--muted);margin-top:4px">Variables: <code>{{first_name}}</code> <code>{{last_name}}</code> <code>{{expiry_date}}</code> <code>{{company_name}}</code></p>
+          <textarea id="ruleTpl" oninput="updatePreview()">Hi {{first_name}}, your subscription expires on {{expiry_date}}. Renew now to stay connected!</textarea>
+          <p style="font-size:.76rem;color:var(--muted);margin-top:4px">Variables: <code>{{first_name}}</code> <code>{{last_name}}</code> <code>{{expiry_date}}</code> <code>{{company_name}}</code></p>
         </div>
-
-        <div class="field">
-          <label>Live Preview</label>
-          <div class="preview-box" id="previewText"></div>
-        </div>
-
-        <button class="inline-btn primary" onclick="saveRule()">💾 Save Rule</button>
-        <div class="alert" id="ruleAlert" style="margin-top:1rem"></div>
+        <div class="field"><label>Live Preview</label><div class="preview-box" id="previewBox"></div></div>
+        <button class="ibtn primary" onclick="saveRule()">💾 Save Rule</button>
+        <div class="alert" id="ruleAlert"></div>
       </div>
-
-      <!-- Existing rules list -->
       <div class="card">
         <div class="card-header">
-          <div class="card-title">Active Rules</div>
-          <button class="inline-btn secondary" onclick="loadRules()">↻ Refresh</button>
+          <div class="card-title">Your Rules</div>
+          <button class="ibtn secondary" onclick="loadRules()">↻ Refresh</button>
         </div>
-        <div id="rulesList">
-          <div class="empty"><div class="big-icon">⚡</div>No rules yet. Create one above.</div>
-        </div>
+        <div id="rulesList"></div>
       </div>
     </div>
 
-    <!-- ── History Tab ── -->
-    <div id="tab-history" class="fade-in" style="display:none">
+    <!-- ── History ────────────────────────────────────────────────────── -->
+    <div id="tab-history" class="fade-up" style="display:none">
       <div class="card">
         <div class="card-header">
           <div class="card-title">Message History</div>
           <div class="card-actions">
-            <button class="inline-btn secondary" onclick="loadHistory()">↻ Refresh</button>
-            <button class="inline-btn danger" onclick="triggerSendNow()">▶ Trigger Send Now</button>
+            <button class="ibtn secondary" onclick="loadHistory()">↻ Refresh</button>
+            <button class="ibtn secondary" onclick="dlCsv('/api/export/jobs.csv','job-history.csv')">⬇ Export</button>
+            <button class="ibtn danger"    onclick="triggerSendNow()">▶ Run Executor Now</button>
           </div>
         </div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>ID</th><th>Channel</th><th>Recipient</th><th>Status</th><th>Scheduled</th></tr></thead>
-            <tbody id="historyTable"><tr><td colspan="5" style="text-align:center;color:var(--muted);padding:2rem">Loading...</td></tr></tbody>
-          </table>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>ID</th><th>Channel</th><th>Recipient</th><th>Status</th><th>Delivery</th><th>Scheduled</th></tr></thead>
+          <tbody id="historyBody"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:2rem">Loading…</td></tr></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- ── DLQ ────────────────────────────────────────────────────────── -->
+    <div id="tab-dlq" class="fade-up" style="display:none">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Dead-Letter Queue</div>
+          <div class="card-actions">
+            <button class="ibtn secondary" onclick="loadDLQ()">↻ Refresh</button>
+            <button class="ibtn danger"    onclick="retryAll()">↻ Retry All</button>
+          </div>
+        </div>
+        <div id="dlqContent"><div class="empty"><div class="empty-icon">🎉</div>No failed jobs</div></div>
+      </div>
+    </div>
+
+    <!-- ── Team ───────────────────────────────────────────────────────── -->
+    <div id="tab-team" class="fade-up" style="display:none">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Team Members</div>
+          <button class="ibtn secondary" onclick="loadTeam()">↻ Refresh</button>
+        </div>
+        <div id="teamList"></div>
+      </div>
+
+      <div class="card" style="max-width:480px">
+        <div class="card-header"><div class="card-title">Invite a Member</div></div>
+        <div class="field"><label>Email Address</label><input id="inviteEmail" type="email" placeholder="colleague@company.com"/></div>
+        <div class="field"><label>Role</label>
+          <select id="inviteRole">
+            <option value="member">Member — view &amp; manage customers</option>
+            <option value="owner">Owner — full access, can invite others</option>
+          </select>
+        </div>
+        <button class="ibtn primary" onclick="inviteMember()">📩 Send Invite</button>
+        <div class="alert" id="teamAlert"></div>
+      </div>
+
+      <!-- GDPR danger zone -->
+      <div class="card" style="border-color:rgba(239,68,68,.25)">
+        <div class="card-header"><div class="card-title" style="color:var(--red)">⚠ GDPR / Account</div></div>
+        <p style="font-size:.86rem;color:var(--muted);margin-bottom:1rem;line-height:1.6">
+          Download a full JSON export of all your data, or permanently delete your account.<br/>
+          Deletion is immediate and cannot be undone — all customers, jobs, rules, and billing records will be erased.
+        </p>
+        <div class="card-actions">
+          <button class="ibtn secondary" onclick="gdprExport()">⬇ Export My Data</button>
+          <button class="ibtn danger"    onclick="openDeleteModal()">🗑 Delete Account</button>
         </div>
       </div>
     </div>
 
-    <!-- ── Test Send Tab ── -->
-    <div id="tab-test" class="fade-in" style="display:none">
-      <div class="card" style="max-width:520px">
+    <!-- ── Audit log ──────────────────────────────────────────────────── -->
+    <div id="tab-audit" class="fade-up" style="display:none">
+      <div class="card">
         <div class="card-header">
-          <div class="card-title">Test Send</div>
+          <div class="card-title">Audit Log</div>
+          <button class="ibtn secondary" onclick="loadAudit()">↻ Refresh</button>
         </div>
-        <div class="field">
-          <label>Customer ID</label>
-          <input id="testCustomerId" placeholder="Enter the customer_id from your CSV"/>
-        </div>
-        <div class="field">
-          <label>Channel</label>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Time</th><th>Actor</th><th>Action</th><th>Target</th><th>Details</th></tr></thead>
+          <tbody id="auditBody"><tr><td colspan="5" style="text-align:center;color:var(--muted);padding:2rem">Loading…</td></tr></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- ── Test send ──────────────────────────────────────────────────── -->
+    <div id="tab-test" class="fade-up" style="display:none">
+      <div class="card" style="max-width:500px">
+        <div class="card-header"><div class="card-title">Test Send</div></div>
+        <div class="field"><label>Customer ID</label><input id="testCustId" placeholder="Exact customer_id from your CSV"/></div>
+        <div class="field"><label>Channel</label>
           <select id="testChannel">
             <option value="email">📧 Email</option>
             <option value="sms">💬 SMS</option>
             <option value="whatsapp">💚 WhatsApp</option>
           </select>
         </div>
-        <button class="inline-btn primary" onclick="doTestSend()">🚀 Send Test Message</button>
-        <div class="alert" id="testAlert" style="margin-top:1rem"></div>
+        <button class="ibtn primary" onclick="doTestSend()">🚀 Send Test</button>
+        <div class="alert" id="testAlert"></div>
       </div>
     </div>
 
+  </div><!-- /main -->
+</div><!-- /dashboard -->
+
+<!-- ══ Delete Account Modal ══ -->
+<div class="modal-bg" id="deleteModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeDeleteModal()">✕</button>
+    <div class="modal-title" style="color:var(--red)">🗑 Delete Account</div>
+    <p style="font-size:.86rem;color:var(--muted);margin-bottom:1rem;line-height:1.6">
+      This will <strong>permanently delete</strong> your account, all customers, jobs, rules, billing history, and team members. There is no undo.
+    </p>
+    <div class="field">
+      <label>Type your email to confirm</label>
+      <input id="deleteEmail" type="email" placeholder="your@email.com"/>
+    </div>
+    <div style="display:flex;gap:.75rem;margin-top:1rem">
+      <button class="ibtn ghost"  style="flex:1;justify-content:center" onclick="closeDeleteModal()">Cancel</button>
+      <button class="ibtn danger" style="flex:1;justify-content:center" onclick="doDelete()">Delete Forever</button>
+    </div>
+    <div class="alert" id="deleteAlert"></div>
   </div>
 </div>
 
 <script>
-let TOKEN       = localStorage.getItem('token');
-let COMPANY     = localStorage.getItem('company_name') || '';
+// ═══════════════════════════════════════════════════════ CORE
+let TOKEN = localStorage.getItem('rp_token');
+let USER  = {};
+try { USER = JSON.parse(localStorage.getItem('rp_user') || '{}'); } catch {}
 
-window.onload = () => {
-  if (TOKEN) initDashboard();
+const TABS = ['members','analytics','rules','history','dlq','team','audit','test'];
+const CH_META = {
+  email:    { icon:'📧', label:'Email',    color:'var(--blue)'  },
+  sms:      { icon:'💬', label:'SMS',      color:'var(--brand)' },
+  whatsapp: { icon:'💚', label:'WhatsApp', color:'var(--green)' },
 };
 
-async function handleSignup() {
-  const company = document.getElementById('authCompany').value.trim();
-  const email   = document.getElementById('authEmail').value.trim();
-  const pass    = document.getElementById('authPassword').value;
-  if (!company || !email || !pass) return showAuthMsg('Fill all fields.', 'error');
+const api = (path, opts={}) => fetch(path, {
+  headers: { Authorization: 'Bearer ' + TOKEN, 'Content-Type': 'application/json', ...(opts.headers||{}) },
+  ...opts,
+});
 
-  const res  = await fetch('/api/signup', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({company_name:company,email,password:pass}) });
-  const data = await res.json();
-  if (data.success) showAuthMsg('Account created! You can now login.', 'success');
-  else showAuthMsg(data.error || 'Signup failed', 'error');
+window.addEventListener('load', () => { if (TOKEN) initDash(); });
+
+// ═══════════════════════════════════════════════════════ AUTH
+function switchTab(t) {
+  ['login','signup'].forEach(n => {
+    document.getElementById('tab' + n.charAt(0).toUpperCase() + n.slice(1)).classList.toggle('active', n===t);
+    document.getElementById(n + 'Fields').style.display = n===t ? '' : 'none';
+  });
+  document.getElementById('authMsg').style.display = 'none';
 }
 
-async function handleLogin() {
-  const email = document.getElementById('authEmail').value.trim();
-  const pass  = document.getElementById('authPassword').value;
-  if (!email || !pass) return showAuthMsg('Enter email and password.', 'error');
+async function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass  = document.getElementById('loginPass').value;
+  if (!email || !pass) return showAuthMsg('Enter email and password','error');
+  const r = await fetch('/api/login', { method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ email, password: pass }) });
+  const d = await r.json();
+  if (d.token) { TOKEN = d.token; saveUser(d); initDash(); }
+  else showAuthMsg(d.error || 'Login failed', 'error');
+}
 
-  const res  = await fetch('/api/login', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email,password:pass}) });
-  const data = await res.json();
-  if (data.token) {
-    TOKEN   = data.token;
-    COMPANY = data.company_name || '';
-    localStorage.setItem('token', TOKEN);
-    localStorage.setItem('company_name', COMPANY);
-    initDashboard();
-  } else {
-    showAuthMsg(data.error || 'Login failed', 'error');
-  }
+async function doSignup() {
+  const company = document.getElementById('signupCompany').value.trim();
+  const email   = document.getElementById('signupEmail').value.trim();
+  const pass    = document.getElementById('signupPass').value;
+  const tos     = document.getElementById('tosCheck').checked;
+  if (!company || !email || !pass) return showAuthMsg('All fields required', 'error');
+  if (pass.length < 8) return showAuthMsg('Password must be at least 8 characters', 'error');
+  if (!tos) return showAuthMsg('You must accept the Terms of Service and Privacy Policy', 'error');
+  const r = await fetch('/api/signup', { method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ company_name: company, email, password: pass, tos_accepted: true }) });
+  const d = await r.json();
+  if (d.success) { showAuthMsg('Account created! You can now sign in.', 'success'); switchTab('login'); }
+  else showAuthMsg(d.error || 'Signup failed', 'error');
 }
 
 function showAuthMsg(msg, type) {
   const el = document.getElementById('authMsg');
-  el.textContent   = msg;
-  el.className     = type;
-  el.style.display = 'block';
+  el.textContent = msg; el.className = type; el.style.display = 'block';
 }
 
-function doLogout() {
-  localStorage.clear();
-  location.href = '/';
+function saveUser(d) {
+  USER = { company_name: d.company_name, role: d.role };
+  localStorage.setItem('rp_token', d.token);
+  localStorage.setItem('rp_user', JSON.stringify(USER));
 }
 
-function initDashboard() {
-  document.getElementById('loginScreen').style.display = 'none';
-  document.getElementById('dashboard').style.display   = 'block';
-  document.getElementById('headerCompany').textContent  = COMPANY;
+function doLogout() { localStorage.clear(); location.href = '/'; }
 
+// ═══════════════════════════════════════════════════════ INIT
+function initDash() {
+  document.getElementById('authScreen').style.display = 'none';
+  document.getElementById('dashboard').style.display  = 'block';
+  document.getElementById('headerCompany').textContent = USER.company_name || '';
   loadStats();
   loadExpiries();
   loadHistory();
   loadRules();
-
-  document.getElementById('template').addEventListener('input', updatePreview);
   updatePreview();
+  document.getElementById('ruleTpl').addEventListener('input', updatePreview);
 }
 
+// ═══════════════════════════════════════════════════════ STATS + CARDS
 async function loadStats() {
-  const res  = await fetch('/api/tenant/stats', { headers:{ Authorization:'Bearer ' + TOKEN } });
-  const data = await res.json();
+  const r = await api('/api/tenant/stats');
+  const d = await r.json();
+  if (!d.channel_stats) return;
 
-  const kpiGrid = document.getElementById('kpiGrid');
-  const total   = data.channel_stats?.reduce((s,c) => s + (c.used || 0), 0) || 0;
-  kpiGrid.innerHTML = `
-    <div class="kpi-card">
-      <div class="accent-bar" style="background:var(--brand)"></div>
-      <div class="kpi-label">Total Sent</div>
-      <div class="kpi-value">${total.toLocaleString()}</div>
-      <div class="kpi-sub">This month</div>
-    </div>
-    <div class="kpi-card">
-      <div class="accent-bar" style="background:var(--red)"></div>
-      <div class="kpi-label">Failed</div>
-      <div class="kpi-value" style="color:var(--red)">${data.failed_jobs || 0}</div>
-      <div class="kpi-sub">This month</div>
-    </div>
-    <div class="kpi-card">
-      <div class="accent-bar" style="background:var(--green)"></div>
-      <div class="kpi-label">Active Plans</div>
-      <div class="kpi-value" style="color:var(--green)">${(data.active_plans||[]).length}</div>
-      <div class="kpi-sub">Channels enabled</div>
-    </div>
-  `;
+  // Quota alerts
+  const banner = document.getElementById('alertBanner');
+  banner.innerHTML = '';
+  d.channel_stats.forEach(ch => {
+    if (!ch.enabled) return;
+    if (ch.pct >= 100) banner.innerHTML += `<div class="quota-alert crit">🚨 <strong>${CH_META[ch.channel]?.label}</strong> quota exhausted — messages paused. <a href="/tenant.html">Upgrade now →</a></div>`;
+    else if (ch.pct >= 80) banner.innerHTML += `<div class="quota-alert warn">⚠️ <strong>${CH_META[ch.channel]?.label}</strong> is at ${ch.pct}% (${ch.remaining.toLocaleString()} left). <a href="/tenant.html">Upgrade →</a></div>`;
+  });
 
-  const CH_META = {
-    email:     { icon:'📧', color:'var(--blue)',   label:'Email' },
-    sms:       { icon:'💬', color:'var(--brand)',  label:'SMS' },
-    whatsapp:  { icon:'💚', color:'var(--green)',  label:'WhatsApp' }
-  };
+  // KPIs
+  const totalSent = d.channel_stats.reduce((s,c)=>s+(c.used||0),0);
+  document.getElementById('kpiGrid').innerHTML = `
+    <div class="kpi-card"><div class="kpi-accent" style="background:var(--brand)"></div><div class="kpi-label">Messages Sent</div><div class="kpi-val">${totalSent.toLocaleString()}</div><div class="kpi-sub">This month</div></div>
+    <div class="kpi-card"><div class="kpi-accent" style="background:var(--red)"></div><div class="kpi-label">Failed</div><div class="kpi-val" style="color:var(--red)">${d.failed_jobs||0}</div><div class="kpi-sub">This month</div></div>
+    <div class="kpi-card"><div class="kpi-accent" style="background:var(--purple)"></div><div class="kpi-label">DLQ</div><div class="kpi-val" style="color:var(--purple)">${d.dlq_count||0}</div><div class="kpi-sub">Permanent failures</div></div>
+    <div class="kpi-card"><div class="kpi-accent" style="background:var(--green)"></div><div class="kpi-label">Customers</div><div class="kpi-val" style="color:var(--green)">${(d.customer_count||0).toLocaleString()}</div><div class="kpi-sub">Uploaded</div></div>`;
 
-  const channelGrid = document.getElementById('channelGrid');
-  channelGrid.innerHTML = (data.channel_stats || []).map(ch => {
-    const meta = CH_META[ch.channel] || { icon:'📡', color:'var(--muted)', label:ch.channel };
-    const pct  = ch.quota > 0 ? Math.min(100, (ch.used/ch.quota)*100) : 0;
-    const pctColor = pct > 85 ? 'var(--red)' : pct > 60 ? 'var(--brand)' : meta.color;
+  // DLQ badge
+  const dlqBtn = document.getElementById('dlqTabBtn');
+  dlqBtn.querySelector('.tab-badge')?.remove();
+  if (d.dlq_count > 0) {
+    const b = document.createElement('span');
+    b.className = 'tab-badge'; b.textContent = d.dlq_count > 99 ? '99+' : d.dlq_count;
+    dlqBtn.appendChild(b);
+  }
 
+  // Channel cards
+  document.getElementById('chGrid').innerHTML = d.channel_stats.map(ch => {
+    const m = CH_META[ch.channel] || { icon:'📡', label: ch.channel, color:'var(--muted)' };
+    const pct = ch.pct || 0;
+    const fillColor = pct>=100 ? 'var(--red)' : pct>=80 ? 'var(--brand)' : m.color;
+    const pillCls   = !ch.enabled ? 'off' : pct>=100 ? 'full' : pct>=80 ? 'warn' : 'on';
+    const pillTxt   = !ch.enabled ? '○ Inactive' : pct>=100 ? '● Full' : pct>=80 ? `● ${pct}%` : '● Active';
     return `
-      <div class="channel-card">
-        <div class="channel-header">
-          <span class="channel-icon">${meta.icon}</span>
-          <span class="ch-badge ${ch.enabled ? 'active' : 'inactive'}">${ch.enabled ? '● Active' : '○ Inactive'}</span>
-        </div>
-        <div class="ch-name">${meta.label}</div>
-        ${ch.enabled ? `
-          <div class="ch-quota">${ch.used.toLocaleString()} / ${ch.quota.toLocaleString()} used</div>
-          <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${pctColor}"></div></div>
-        ` : `
-          <div class="ch-quota">Not in your plan</div>
-          <a href="/home.html#pricing" class="upgrade-link">+ Add this channel →</a>
-        `}
+    <div class="ch-card">
+      <div class="ch-header">
+        <span class="ch-icon">${m.icon}</span>
+        <span class="ch-pill ${pillCls}">${pillTxt}</span>
       </div>
-    `;
+      <div class="ch-name">${m.label}</div>
+      ${ch.enabled ? `
+        <div class="ch-quota">${ch.used.toLocaleString()} / ${ch.quota.toLocaleString()} used</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${fillColor}"></div></div>
+        ${pct>=80 ? `<a href="/tenant.html" class="ch-cta">⚡ Upgrade Plan →</a>` : ''}
+      ` : `<div class="ch-quota" style="margin-top:4px">Not in your plan</div><a href="/home.html" class="ch-cta">+ Add Channel →</a>`}
+    </div>`;
   }).join('');
 }
 
-function switchTab(name) {
-  const names = ['members','rules','history','test'];
-  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', names[i] === name));
-  names.forEach(t => { document.getElementById('tab-' + t).style.display = t === name ? 'block' : 'none'; });
+// ═══════════════════════════════════════════════════════ TAB SWITCHING
+function showTab(name) {
+  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', TABS[i]===name));
+  TABS.forEach(t => { const el=document.getElementById('tab-'+t); if(el) el.style.display=t===name?'block':'none'; });
+  if (name==='analytics') loadAnalytics();
+  if (name==='dlq')       loadDLQ();
+  if (name==='team')      loadTeam();
+  if (name==='audit')     loadAudit();
 }
 
-function onFileSelected(input) {
+// ═══════════════════════════════════════════════════════ MEMBERS
+function onFilePick(input) {
   const f = input.files[0];
-  document.getElementById('selectedFileName').textContent = f ? 'Selected: ' + f.name : '';
+  document.getElementById('pickedFile').textContent = f ? '📄 ' + f.name : '';
 }
 
-async function uploadCSV() {
+async function doUpload() {
   const file = document.getElementById('csvFile').files[0];
-  if (!file) return showAlert('uploadAlert', 'No file selected', 'error');
-
-  const form = new FormData();
-  form.append('file', file);
-  showAlert('uploadAlert', 'Uploading...', 'info');
-
-  const res  = await fetch('/api/upload', { method:'POST', headers:{ Authorization:'Bearer ' + TOKEN }, body:form });
-  const data = await res.json();
-
-  if (data.success) {
-    showAlert('uploadAlert', '✅ Uploaded ' + data.inserted + ' members' + (data.skipped ? ' (' + data.skipped + ' skipped)' : ''), 'success');
-    loadExpiries();
-  } else {
-    showAlert('uploadAlert', data.error || 'Upload failed', 'error');
-  }
+  if (!file) return showAlert('uploadAlert', 'Select a CSV file first', 'err');
+  const form = new FormData(); form.append('file', file);
+  showAlert('uploadAlert', 'Uploading…', 'info');
+  const r = await fetch('/api/upload', { method:'POST', headers:{ Authorization:'Bearer '+TOKEN }, body: form });
+  const d = await r.json();
+  if (d.success) {
+    showAlert('uploadAlert', `✅ Uploaded ${d.inserted} members${d.skipped ? ` (${d.skipped} skipped)` : ''}`, 'ok');
+    loadExpiries(); loadStats();
+  } else showAlert('uploadAlert', d.error || 'Upload failed', 'err');
 }
 
 async function loadExpiries() {
-  const res  = await fetch('/api/tenant/upcoming-expiries', { headers:{ Authorization:'Bearer ' + TOKEN } });
-  const data = await res.json();
-  const tbody = document.getElementById('expiryTable');
-
-  if (!Array.isArray(data) || !data.length) {
-    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:2rem">No upcoming expiries in the next 30 days</td></tr>';
+  const r = await api('/api/tenant/upcoming-expiries');
+  const d = await r.json();
+  const tbody = document.getElementById('expiriesBody');
+  if (!Array.isArray(d) || !d.length) {
+    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:2rem">No expiries in the next 30 days</td></tr>';
     return;
   }
-
-  tbody.innerHTML = data.map(c => {
-    const d = c.days_left;
-    const color = d <= 3 ? 'var(--red)' : d <= 7 ? 'var(--brand)' : 'var(--green)';
-    return '<tr><td>' + (c.customer_name || '—') + '</td><td>' + new Date(c.expiry_date).toLocaleDateString('en-IN') + '</td><td style="color:' + color + ';font-weight:600">' + d + ' days</td></tr>';
+  tbody.innerHTML = d.map(c => {
+    const day = parseInt(c.days_left);
+    const col = day <= 3 ? 'var(--red)' : day <= 7 ? 'var(--brand)' : 'var(--green)';
+    return `<tr>
+      <td>${c.customer_name?.trim() || '—'}</td>
+      <td>${new Date(c.expiry_date).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}</td>
+      <td style="color:${col};font-weight:700">${day}d</td>
+    </tr>`;
   }).join('');
 }
 
+// ═══════════════════════════════════════════════════════ ANALYTICS
+async function loadAnalytics() {
+  const months = document.getElementById('monthsRange').value;
+  const r = await api(`/api/analytics?months=${months}`);
+  const d = await r.json();
+
+  // Delivery rates
+  const drEl = document.getElementById('deliveryRates');
+  if (!d.delivery_rates?.length) { drEl.innerHTML = '<div class="empty"><div class="empty-icon">📊</div>No data yet</div>'; }
+  else {
+    drEl.innerHTML = d.delivery_rates.map(ch => {
+      const tot  = parseInt(ch.total)||0; if (!tot) return '';
+      const meta = CH_META[ch.channel]||{icon:'📡',label:ch.channel,color:'var(--muted)'};
+      const sentPct  = Math.round((parseInt(ch.sent)||0)/tot*100);
+      const failPct  = Math.round((parseInt(ch.perm_failed)||0)/tot*100);
+      const openPct  = Math.round((parseInt(ch.opened)||0)/tot*100);
+      const delivPct = Math.round((parseInt(ch.delivered)||0)/tot*100);
+      return `<div style="margin-bottom:1.5rem">
+        <div style="font-weight:600;margin-bottom:.6rem">${meta.icon} ${meta.label} <span style="font-size:.8rem;color:var(--muted);font-weight:400">(${tot.toLocaleString()} total)</span></div>
+        <div class="chart-row"><span class="chart-label">Sent</span><div class="chart-bar-bg"><div class="chart-bar-fill" style="width:${sentPct}%;background:var(--green)"></div></div><span class="chart-val">${sentPct}%</span></div>
+        <div class="chart-row"><span class="chart-label">Delivered</span><div class="chart-bar-bg"><div class="chart-bar-fill" style="width:${delivPct}%;background:var(--blue)"></div></div><span class="chart-val">${delivPct}%</span></div>
+        <div class="chart-row"><span class="chart-label">Opened</span><div class="chart-bar-bg"><div class="chart-bar-fill" style="width:${openPct}%;background:var(--purple)"></div></div><span class="chart-val">${openPct}%</span></div>
+        <div class="chart-row"><span class="chart-label">Failed</span><div class="chart-bar-bg"><div class="chart-bar-fill" style="width:${failPct}%;background:var(--red)"></div></div><span class="chart-val">${failPct}%</span></div>
+      </div>`;
+    }).join('');
+  }
+
+  // Monthly trend table
+  const mtEl = document.getElementById('monthlyTrend');
+  if (!d.monthly_trend?.length) { mtEl.innerHTML = '<div class="empty"><div class="empty-icon">📈</div>No monthly data yet</div>'; }
+  else {
+    const months2   = [...new Set(d.monthly_trend.map(r=>r.month))].sort();
+    const channels  = [...new Set(d.monthly_trend.map(r=>r.channel))];
+    const byKey     = {};
+    d.monthly_trend.forEach(r => { byKey[r.month+'_'+r.channel] = r; });
+    mtEl.innerHTML = `<table>
+      <thead><tr><th>Month</th>${channels.map(c=>`<th>${CH_META[c]?.icon||''} ${CH_META[c]?.label||c} Sent</th><th>Failed</th>`).join('')}</tr></thead>
+      <tbody>${months2.map(m => `<tr><td style="color:var(--muted)">${m}</td>${channels.map(c => {
+        const row = byKey[m+'_'+c];
+        const sent = row ? parseInt(row.sent||0) : 0;
+        const fail = row ? parseInt(row.failed||0) : 0;
+        return `<td style="color:var(--green)">${sent||'—'}</td><td style="color:var(--red);font-size:.8rem">${fail||'—'}</td>`;
+      }).join('')}</tr>`).join('')}</tbody>
+    </table>`;
+  }
+
+  // Expiry buckets
+  const ebEl = document.getElementById('expiryBuckets');
+  if (!d.expiry_buckets?.length) { ebEl.innerHTML = '<div class="empty"><div class="empty-icon">📅</div>No upcoming expiries</div>'; }
+  else {
+    const total = d.expiry_buckets.reduce((s,r)=>s+parseInt(r.count||0),0);
+    ebEl.innerHTML = d.expiry_buckets.map((r,i) => {
+      const cnt = parseInt(r.count||0);
+      const pct = total ? Math.round(cnt/total*100) : 0;
+      const colors = ['var(--red)','var(--brand)','var(--green)'];
+      return `<div class="chart-row" style="margin-bottom:8px">
+        <span class="chart-label">${r.bucket}</span>
+        <div class="chart-bar-bg"><div class="chart-bar-fill" style="width:${pct}%;background:${colors[i]||'var(--muted)'}"></div></div>
+        <span class="chart-val">${cnt.toLocaleString()}</span>
+      </div>`;
+    }).join('');
+  }
+}
+
+// ═══════════════════════════════════════════════════════ RULES
 function updatePreview() {
-  let t = document.getElementById('template').value || '';
-  t = t.replace(/{{first_name}}/g,'John')
-       .replace(/{{last_name}}/g,'Doe')
-       .replace(/{{expiry_date}}/g,'2025-03-31')
-       .replace(/{{company_name}}/g, COMPANY || 'FitZone');
-  document.getElementById('previewText').textContent = t;
+  const tpl = document.getElementById('ruleTpl')?.value || '';
+  document.getElementById('previewBox').textContent = tpl
+    .replace(/{{first_name}}/g,'John').replace(/{{last_name}}/g,'Doe')
+    .replace(/{{expiry_date}}/g,'2025-03-31').replace(/{{company_name}}/g, USER.company_name||'FitZone');
 }
 
 async function saveRule() {
   const name      = document.getElementById('ruleName').value.trim() || 'Expiry Reminder';
-  const lead_days = document.getElementById('leadDays').value.split(',').map(x=>parseInt(x.trim())).filter(Boolean);
-  const template  = document.getElementById('template').value.trim();
-  const channels  = ['chEmail','chSMS','chWhatsApp']
-    .filter(id => document.getElementById(id).checked)
-    .map(id => ({ chEmail:'email', chSMS:'sms', chWhatsApp:'whatsapp' })[id]);
+  const leadRaw   = document.getElementById('leadDays').value;
+  const lead_days = leadRaw.split(',').map(x=>parseInt(x.trim())).filter(n=>!isNaN(n)&&n>0);
+  const template  = document.getElementById('ruleTpl').value.trim();
+  const channels  = [...document.querySelectorAll('.ch-checks input:checked')].map(x=>x.value);
 
-  if (!channels.length) return showAlert('ruleAlert', 'Select at least one channel', 'error');
-  if (!lead_days.length) return showAlert('ruleAlert', 'Enter valid lead days', 'error');
-  if (!template)          return showAlert('ruleAlert', 'Template is required', 'error');
+  if (!channels.length) return showAlert('ruleAlert','Select at least one channel','err');
+  if (!lead_days.length) return showAlert('ruleAlert','Enter valid lead days (e.g. 30, 7, 1)','err');
+  if (!template) return showAlert('ruleAlert','Template is required','err');
 
-  const res  = await fetch('/api/rules', { method:'POST', headers:{'Content-Type':'application/json',Authorization:'Bearer ' + TOKEN}, body:JSON.stringify({name,lead_days,channels,template}) });
-  const data = await res.json();
-
-  if (data.success) {
-    showAlert('ruleAlert', '✅ Rule saved! Scheduler will create jobs on next run.', 'success');
-    loadRules();
-  } else {
-    showAlert('ruleAlert', data.error || 'Failed to save rule', 'error');
-  }
+  const r = await api('/api/rules', { method:'POST', body: JSON.stringify({ name, lead_days, channels, template }) });
+  const d = await r.json();
+  if (d.success) { showAlert('ruleAlert','✅ Rule saved!','ok'); loadRules(); }
+  else showAlert('ruleAlert', d.error||'Failed to save rule', 'err');
 }
 
 async function loadRules() {
-  const res  = await fetch('/api/rules', { headers:{ Authorization:'Bearer ' + TOKEN } });
-  const data = await res.json();
-  const el   = document.getElementById('rulesList');
-
-  if (!Array.isArray(data) || !data.length) {
-    el.innerHTML = '<div class="empty"><div class="big-icon">⚡</div>No rules yet. Create one above.</div>';
-    return;
-  }
-
-  el.innerHTML = data.map(r => {
-    const chs = (r.channels || []).map(c => ({ email:'📧',sms:'💬',whatsapp:'💚' }[c] || c)).join(' ');
-    return '<div style="padding:0.8rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:1rem"><div><div style="font-weight:600">' + r.name + '</div><div style="font-size:0.8rem;color:var(--muted);margin-top:3px">' + chs + ' &nbsp;·&nbsp; ' + (r.lead_days||[]).join(', ') + ' days before</div></div><span style="font-size:0.78rem;padding:3px 10px;border-radius:20px;background:rgba(34,197,94,0.15);color:var(--green);white-space:nowrap">' + (r.is_active ? '● Active' : '○ Inactive') + '</span></div>';
+  const r = await api('/api/rules'); const d = await r.json();
+  const el = document.getElementById('rulesList');
+  if (!Array.isArray(d)||!d.length) { el.innerHTML='<div class="empty"><div class="empty-icon">⚡</div>No rules yet.</div>'; return; }
+  el.innerHTML = d.map(rule => {
+    const chs = (rule.channels||[]).map(c=>CH_META[c]?.icon||c).join(' ');
+    const days = (rule.lead_days||[]).join(', ');
+    return `<div style="padding:.9rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap">
+      <div>
+        <div style="font-weight:600">${rule.name}</div>
+        <div style="font-size:.79rem;color:var(--muted);margin-top:3px">${chs} &nbsp;·&nbsp; ${days} days before expiry</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:.5rem">
+        <span class="pill ${rule.is_active?'sent':'failed'}">${rule.is_active?'● Active':'○ Inactive'}</span>
+        ${rule.is_active ? `<button class="ibtn ghost" style="font-size:.75rem;padding:4px 10px" onclick="deactivateRule(${rule.id})">Pause</button>` : ''}
+      </div>
+    </div>`;
   }).join('');
 }
 
+async function deactivateRule(id) {
+  await api('/api/rules/'+id, { method:'DELETE' });
+  loadRules();
+}
+
+// ═══════════════════════════════════════════════════════ HISTORY
 async function loadHistory() {
-  const res  = await fetch('/api/history', { headers:{ Authorization:'Bearer ' + TOKEN } });
-  const data = await res.json();
-  const tbody = document.getElementById('historyTable');
-
-  if (!Array.isArray(data) || !data.length) {
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:2rem">No messages yet</td></tr>';
-    return;
+  const r = await api('/api/history'); const d = await r.json();
+  const tbody = document.getElementById('historyBody');
+  if (!Array.isArray(d)||!d.length) {
+    tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:2rem">No messages yet</td></tr>'; return;
   }
-
-  const CH_ICON = { email:'📧', sms:'💬', whatsapp:'💚' };
-  tbody.innerHTML = data.map(j => '<tr><td style="color:var(--muted)">#' + j.id + '</td><td>' + (CH_ICON[j.channel]||'') + ' ' + (j.channel||'').toUpperCase() + '</td><td style="font-size:0.82rem">' + (j.recipient||'—') + '</td><td><span class="status-pill ' + j.status + '">' + j.status + '</span></td><td style="color:var(--muted);font-size:0.82rem">' + (j.scheduled_at ? new Date(j.scheduled_at).toLocaleString('en-IN') : '—') + '</td></tr>').join('');
+  tbody.innerHTML = d.map(j => `<tr>
+    <td style="color:var(--muted);font-size:.78rem">#${j.id}</td>
+    <td>${CH_META[j.channel]?.icon||''} <span style="font-size:.8rem">${(j.channel||'').toUpperCase()}</span></td>
+    <td style="font-size:.8rem;color:var(--muted)">${j.recipient||'—'}</td>
+    <td><span class="pill ${j.status}">${j.status}</span></td>
+    <td>${j.delivery_status ? `<span class="pill ${j.delivery_status}">${j.delivery_status}</span>` : '<span style="color:var(--muted);font-size:.78rem">—</span>'}</td>
+    <td style="color:var(--muted);font-size:.78rem;white-space:nowrap">${j.scheduled_at ? new Date(j.scheduled_at).toLocaleString('en-IN') : '—'}</td>
+  </tr>`).join('');
 }
 
 async function triggerSendNow() {
-  if (!confirm('Trigger job executor now?')) return;
-  const res  = await fetch('/api/send-now', { method:'POST', headers:{ Authorization:'Bearer ' + TOKEN } });
-  const data = await res.json();
-  if (data.success) { loadHistory(); loadStats(); }
+  if (!confirm('Trigger the job executor now?')) return;
+  const r = await api('/api/send-now', { method:'POST' });
+  const d = await r.json();
+  if (d.success) { loadHistory(); loadStats(); }
 }
 
+// ═══════════════════════════════════════════════════════ DLQ
+async function loadDLQ() {
+  const r = await api('/api/jobs/dlq?limit=50'); const d = await r.json();
+  const el = document.getElementById('dlqContent');
+  if (!d.jobs?.length) { el.innerHTML='<div class="empty"><div class="empty-icon">🎉</div>No failed jobs!</div>'; return; }
+  el.innerHTML = `<div class="tbl-wrap"><table>
+    <thead><tr><th>ID</th><th>Channel</th><th>Recipient</th><th>Error</th><th>Failed</th><th>Action</th></tr></thead>
+    <tbody>${d.jobs.map(j=>`<tr>
+      <td style="color:var(--muted)">#${j.id}</td>
+      <td>${CH_META[j.channel]?.icon||''} <span style="font-size:.78rem">${(j.channel||'').toUpperCase()}</span></td>
+      <td style="font-size:.78rem">${j.recipient||'—'}</td>
+      <td style="font-size:.75rem;color:var(--red);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${j.last_error||'—'}</td>
+      <td style="font-size:.78rem;color:var(--muted);white-space:nowrap">${j.created_at ? new Date(j.created_at).toLocaleString('en-IN') : '—'}</td>
+      <td><button class="ibtn secondary" style="font-size:.75rem;padding:5px 10px" onclick="retryJob(${j.id},this)">↻ Retry</button></td>
+    </tr>`).join('')}</tbody>
+  </table></div>`;
+}
+
+async function retryJob(id, btn) {
+  btn.disabled = true; btn.textContent = '…';
+  const r = await api('/api/jobs/'+id+'/retry', { method:'POST' });
+  const d = await r.json();
+  if (d.success) loadDLQ();
+  else { btn.disabled=false; btn.textContent='↻ Retry'; }
+}
+
+async function retryAll() {
+  if (!confirm('Retry all permanently failed jobs?')) return;
+  const r = await api('/api/jobs/dlq/retry-all', { method:'POST' });
+  const d = await r.json();
+  if (d.retried != null) loadDLQ();
+}
+
+// ═══════════════════════════════════════════════════════ TEAM
+async function loadTeam() {
+  const r = await api('/api/team'); const d = await r.json();
+  const el = document.getElementById('teamList');
+  if (!Array.isArray(d)||!d.length) { el.innerHTML='<div class="empty"><div class="empty-icon">👤</div>No team members yet</div>'; return; }
+  el.innerHTML = `<div class="tbl-wrap"><table>
+    <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Added</th><th>Action</th></tr></thead>
+    <tbody>${d.map(m=>`<tr>
+      <td>${m.name||'—'}</td>
+      <td style="font-size:.82rem">${m.email}</td>
+      <td><span class="pill ${m.team_role}">${m.team_role}</span></td>
+      <td style="font-size:.78rem;color:var(--muted)">${new Date(m.created_at).toLocaleDateString('en-IN')}</td>
+      <td><button class="ibtn danger" style="font-size:.75rem;padding:5px 10px" onclick="removeMember(${m.id})">Remove</button></td>
+    </tr>`).join('')}</tbody>
+  </table></div>`;
+}
+
+async function inviteMember() {
+  const email     = document.getElementById('inviteEmail').value.trim();
+  const team_role = document.getElementById('inviteRole').value;
+  if (!email) return showAlert('teamAlert','Email required','err');
+  const r = await api('/api/team/invite', { method:'POST', body: JSON.stringify({ email, team_role }) });
+  const d = await r.json();
+  if (d.success) {
+    showAlert('teamAlert',`✅ ${email} added as ${team_role}`,'ok');
+    document.getElementById('inviteEmail').value = '';
+    loadTeam();
+  } else showAlert('teamAlert', d.error||'Failed','err');
+}
+
+async function removeMember(id) {
+  if (!confirm('Remove this team member?')) return;
+  const r = await api('/api/team/'+id, { method:'DELETE' });
+  if ((await r.json()).success) loadTeam();
+}
+
+// ═══════════════════════════════════════════════════════ GDPR
+async function gdprExport() {
+  const resp = await fetch('/api/gdpr/export', { headers:{ Authorization:'Bearer '+TOKEN } });
+  if (!resp.ok) { alert('Export failed'); return; }
+  const blob = await resp.blob();
+  const url  = URL.createObjectURL(blob);
+  const a    = Object.assign(document.createElement('a'), { href:url, download:'renewpulse-export.json' });
+  a.click(); URL.revokeObjectURL(url);
+}
+
+function openDeleteModal()  { document.getElementById('deleteModal').classList.add('open'); }
+function closeDeleteModal() { document.getElementById('deleteModal').classList.remove('open'); document.getElementById('deleteAlert').className='alert'; }
+
+async function doDelete() {
+  const confirm_email = document.getElementById('deleteEmail').value.trim();
+  const r = await api('/api/gdpr/account', { method:'DELETE', body: JSON.stringify({ confirm_email }) });
+  const d = await r.json();
+  if (d.success) { localStorage.clear(); location.href = '/'; }
+  else showAlert('deleteAlert', d.error||'Deletion failed','err');
+}
+
+// ═══════════════════════════════════════════════════════ AUDIT
+async function loadAudit() {
+  const r = await api('/api/audit?limit=100'); const d = await r.json();
+  const tbody = document.getElementById('auditBody');
+  if (!Array.isArray(d)||!d.length) {
+    tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:2rem">No audit events yet</td></tr>'; return;
+  }
+  tbody.innerHTML = d.map(e => `<tr>
+    <td style="font-size:.75rem;color:var(--muted);white-space:nowrap">${new Date(e.created_at).toLocaleString('en-IN')}</td>
+    <td style="font-size:.8rem">${e.actor_email||'—'}</td>
+    <td><code style="font-size:.75rem">${e.action}</code></td>
+    <td style="font-size:.78rem;color:var(--muted)">${[e.target_type, e.target_id ? '#'+e.target_id : null].filter(Boolean).join(' ')}</td>
+    <td style="font-size:.75rem;color:var(--muted);max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+      ${e.meta && Object.keys(e.meta).length ? JSON.stringify(e.meta) : ''}
+    </td>
+  </tr>`).join('');
+}
+
+// ═══════════════════════════════════════════════════════ TEST SEND
 async function doTestSend() {
-  const customer_id = document.getElementById('testCustomerId').value.trim();
+  const customer_id = document.getElementById('testCustId').value.trim();
   const channel     = document.getElementById('testChannel').value;
-
-  if (!customer_id) return showAlert('testAlert', 'Enter a customer ID', 'error');
-
-  showAlert('testAlert', 'Sending...', 'info');
-
-  const res  = await fetch('/api/test-send', { method:'POST', headers:{'Content-Type':'application/json',Authorization:'Bearer ' + TOKEN}, body:JSON.stringify({customer_id,channel}) });
-  const data = await res.json();
-
-  if (data.success) showAlert('testAlert', '✅ Test message sent via ' + channel + '! Provider ID: ' + data.provider_id, 'success');
-  else showAlert('testAlert', data.error || 'Failed', 'error');
+  if (!customer_id) return showAlert('testAlert','Enter a customer ID','err');
+  showAlert('testAlert','Sending…','info');
+  const r = await api('/api/test-send', { method:'POST', body: JSON.stringify({ customer_id, channel }) });
+  const d = await r.json();
+  if (d.success) showAlert('testAlert',`✅ Sent via ${channel}! Provider ID: ${d.provider_id}`,'ok');
+  else showAlert('testAlert', d.error||'Send failed','err');
 }
 
+// ═══════════════════════════════════════════════════════ UTILITIES
 function showAlert(id, msg, type) {
   const el = document.getElementById(id);
-  el.textContent = msg;
-  el.className   = 'alert ' + type + ' show';
+  if (!el) return;
+  el.textContent = msg; el.className = 'alert show ' + type;
+}
+
+async function dlCsv(path, filename) {
+  const r = await fetch(path, { headers:{ Authorization:'Bearer '+TOKEN } });
+  if (!r.ok) return;
+  const blob = await r.blob();
+  const url  = URL.createObjectURL(blob);
+  const a    = Object.assign(document.createElement('a'), { href:url, download:filename });
+  a.click(); URL.revokeObjectURL(url);
 }
 </script>
 </body>
